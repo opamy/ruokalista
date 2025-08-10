@@ -66,8 +66,8 @@
             <select id="weekDropdown"></select>
           </div>
           <div class="mt-3 text-center">
-            <span class="text-sm text-gray-500 dark:text-gray-400">
-              Luo uusi välilehti Sheetsiin muodossa 2025-V32 jne.
+            <span class="text-sm text-gray-500 dark:text-gray-400" id="currentWeekInfo">
+              kuluva viikko
             </span>
           </div>
         </div>
@@ -82,7 +82,7 @@
           <button id="tulosta" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">🖨️ Tulosta</button>
         </div>
         <p class="text-sm text-gray-500 dark:text-gray-400">
-          💡 Tiedot päivittyvät automaattisesti Google Sheetsistä. Luo uusi välilehti Sheetsiin uutta viikkoa varten.
+          💡 Tiedot päivittyvät automaattisesti Google Sheetsistä.
         </p>
       </div>
     </div>
@@ -90,8 +90,7 @@
 
   <script type="module">
     // ============ MUUTA NÄMÄ OMAAN KÄYTTÖÖSI ============
-    const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/10bBmmXNo8YWJKgak6MT1znba_dE1Ft-eyAfM-qNjqqU/edit?gid=0#gid=0';
-    const START_WEEK = '2025-V32'; // Aloitusviikko
+    const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit#gid=0';
     const WEEK_COUNT = 20; // Kuinka monta viikkoa näytetään valitsimessa
     // =====================================================
 
@@ -118,9 +117,23 @@
     ];
 
     // Globaalit muuttujat
-    let currentWeek = START_WEEK;
+    let currentWeek = getCurrentIsoWeek();
     let spreadsheetId = null;
     let availableWeeks = [];
+
+    // Hae kuluva viikko muodossa 2025-V32
+    function getCurrentIsoWeek() {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      // ISO week
+      const thursday = new Date(now);
+      thursday.setDate(now.getDate() + 3 - ((now.getDay() + 6) % 7));
+      const year = thursday.getFullYear();
+      const firstThursday = new Date(thursday.getFullYear(), 0, 4);
+      firstThursday.setDate(firstThursday.getDate() + 3 - ((firstThursday.getDay() + 6) % 7));
+      const week = 1 + Math.round(((thursday.getTime() - firstThursday.getTime()) / 86400000 - 3) / 7);
+      return `${year}-V${week.toString().padStart(2, '0')}`;
+    }
 
     // Luo viikkolista muodossa [{name, sheetName}]
     function generateWeekList(startWeek, count) {
@@ -195,47 +208,75 @@
     // Valitse viikko
     function selectWeek(weekName) {
       currentWeek = weekName;
+      updateCurrentWeekInfo();
       loadData();
       localStorage.setItem('selectedWeek', weekName);
     }
 
-    // Yksinkertainen CSV-parseri
-    function parseCSV(csvText) {
-      const lines = csvText.trim().split('\n');
-      return lines.map(line => {
-        const result = [];
-        let current = '';
-        let inQuotes = false;
-        for (let i = 0; i < line.length; i++) {
-          const char = line[i];
-          if (char === '"') {
-            if (i + 1 < line.length && line[i + 1] === '"') {
-              current += '"';
-              i++; // skip next quote
-            } else {
-              inQuotes = !inQuotes;
-            }
-          } else if (char === ',' && !inQuotes) {
-            result.push(current.trim().replace(/^"|"$/g, ''));
-            current = '';
-          } else {
-            current += char;
-          }
-        }
-        result.push(current.trim().replace(/^"|"$/g, ''));
-        return result;
-      });
+    function updateCurrentWeekInfo() {
+      const info = document.getElementById('currentWeekInfo');
+      info.textContent = 'kuluva viikko';
     }
 
-    // Muuta rivinvaihdot HTML-muotoon
+    // CSV-parser joka tukee rivinvaihtoja lainausmerkeissä
+    function parseCSV(text) {
+      const rows = [];
+      let row = [];
+      let field = '';
+      let inQuotes = false;
+      let i = 0;
+      while (i < text.length) {
+        const char = text[i];
+        const nextChar = text[i + 1];
+        if (inQuotes) {
+          if (char === '"') {
+            if (nextChar === '"') {
+              field += '"';
+              i++;
+            } else {
+              inQuotes = false;
+            }
+          } else {
+            field += char;
+          }
+        } else {
+          if (char === '"') {
+            inQuotes = true;
+          } else if (char === ',') {
+            row.push(field);
+            field = '';
+          } else if (char === '\r' && nextChar === '\n') {
+            row.push(field);
+            rows.push(row);
+            row = [];
+            field = '';
+            i++;
+          } else if (char === '\n' || char === '\r') {
+            row.push(field);
+            rows.push(row);
+            row = [];
+            field = '';
+          } else {
+            field += char;
+          }
+        }
+        i++;
+      }
+      // Lisää viimeinen kenttä jos jäi kesken
+      if (field !== '' || row.length > 0) {
+        row.push(field);
+        rows.push(row);
+      }
+      return rows;
+    }
+
+    // Muuta rivinvaihdot HTML:ksi (suojaa XSS!)
     function formatLinebreaks(text) {
       if (!text) return '';
-      // Muuta \r\n ja \r -> \n
-      return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').map(line => {
-        // Jos tyhjä rivi, säilytä
-        if(line === '') return '<br>';
-        return line.replace(/</g, "&lt;").replace(/>/g, "&gt;"); // XSS-suojaus
-      }).join('<br>');
+      // Suojaa html-erikoismerkit
+      let safe = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      // Muuta rivinvaihdot <br>
+      return safe.replace(/\r\n|\r|\n/g, "<br>");
     }
 
     // Päivitä yksittäinen kenttä
@@ -338,15 +379,16 @@
         return;
       }
       renderDays();
-      availableWeeks = generateWeekList(START_WEEK, WEEK_COUNT);
-      // Lataa tallennettu viikkovalinta tai käytä aloitusviikkoa
+      availableWeeks = generateWeekList(getCurrentIsoWeek(), WEEK_COUNT);
+      // Lataa tallennettu viikkovalinta tai käytä kuluvaa viikkoa
       const savedWeek = localStorage.getItem('selectedWeek');
       if (savedWeek && availableWeeks.some(w => w.name === savedWeek)) {
         currentWeek = savedWeek;
       } else {
-        currentWeek = availableWeeks[0]?.name || START_WEEK;
+        currentWeek = availableWeeks[0]?.name || getCurrentIsoWeek();
       }
       renderWeekDropdown();
+      updateCurrentWeekInfo();
       loadData();
       setInterval(loadData, 5 * 60 * 1000);
     }
