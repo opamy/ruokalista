@@ -94,7 +94,7 @@
     
     const fields = [
       { key: "ruoka", label: "Ruoka", placeholder: "Ladataan..." },
-      { key: "kokki”, label: "Kuka tekee", placeholder: "Ladataan..." },
+      { key: "kuka", label: "Kuka tekee", placeholder: "Ladataan..." },
       { key: "tarvikkeet", label: "Tarvikkeet", placeholder: "Ladataan..." },
       { key: "ohjeet", label: "Ohjeet", placeholder: "Ladataan..." }
     ];
@@ -263,17 +263,6 @@
       navigator.clipboard.writeText(output).then(() => {
         showToast('Ruokalista kopioitu leikepöydälle!');
       });
-    };
-
-    // Tyhjennä kaikki
-    document.getElementById('tyhjenna').onclick = function() {
-      if (!confirm('Haluatko varmasti tyhjentää näytön? (Tämä ei muuta Google Sheetsiä)')) return;
-      document.querySelectorAll('.editable').forEach(el => {
-        el.textContent = '';
-      });
-      document.getElementById('updateStatus').textContent = 'Näyttö tyhjennetty';
-      document.getElementById('updateStatus').className = 'text-gray-500';
-      showToast('Näyttö tyhjennetty!');
     };
 
     // Tulosta
