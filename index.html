@@ -5,6 +5,8 @@
   <title>Viikon Ruokalista</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Papa Parse for robust CSV parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
     * { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif }
     .editable {
@@ -143,30 +145,6 @@
       return match ? match[1] : null;
     }
 
-    // Yksinkertainen CSV-parseri
-    function parseCSV(csvText) {
-      const lines = csvText.trim().split('\n');
-      return lines.map(line => {
-        const result = [];
-        let current = '';
-        let inQuotes = false;
-        
-        for (let i = 0; i < line.length; i++) {
-          const char = line[i];
-          if (char === '"') {
-            inQuotes = !inQuotes;
-          } else if (char === ',' && !inQuotes) {
-            result.push(current.trim().replace(/^"|"$/g, ''));
-            current = '';
-          } else {
-            current += char;
-          }
-        }
-        result.push(current.trim().replace(/^"|"$/g, ''));
-        return result;
-      });
-    }
-
     // Päivitä yksittäinen kenttä
     function updateField(dayIndex, fieldKey, value) {
       const element = document.querySelector(`[data-day="${dayIndex}"][data-field="${fieldKey}"]`);
@@ -228,7 +206,9 @@
         }
         
         const csvData = await response.text();
-        const rows = parseCSV(csvData);
+
+        // Käytä Papa Parsea rivinvaihtojen ja lainausmerkkien käsittelyyn
+        const rows = Papa.parse(csvData, { skipEmptyLines: true }).data;
         
         if (rows.length > 0) {
           populateFields(rows);
