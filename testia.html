@@ -1,0 +1,82 @@
+```html name=dropdown-test.html
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <title>Dropdown-tyylien vertailu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f9fafb; color: #222; }
+    .demo-box { margin: 2rem auto; padding: 1rem 2rem; background: #fff; border-radius: 1rem; box-shadow: 0 2px 8px #0001; max-width: 500px; }
+    .label { margin-bottom: 0.5rem; font-weight: bold; font-size: 1rem; color: #555; }
+    .sep { margin: 2rem 0 1rem 0; border-bottom: 2px dashed #eee; }
+    /* A) Perus pyöristetty */
+    .dropdown-a {
+      border-radius: 0.75rem; border: 1px solid #d1d5db; padding: 0.5rem 1rem;
+      font-size: 1rem; background: #f3f4f6; min-width: 200px;
+    }
+    /* B) Emoji nykyiselle viikolle */
+    .dropdown-b {
+      border-radius: 0.5rem; border: 1px solid #cbd5e1; padding: 0.45rem 1rem;
+      font-size: 1rem; background: #e0e7ef; min-width: 200px;
+    }
+    /* C) Boldaus nykyviikolle (ei kaikissa selaimissa näy option bold) */
+    .dropdown-c {
+      border-radius: 1.5rem; border: 2px solid #bbb; padding: 0.6rem 1.2rem;
+      font-size: 1.1rem; background: #f8fafc; min-width: 220px;
+      text-align: center;
+    }
+    /* D) Isompi/keskitetty, varjo, blue border */
+    .dropdown-d {
+      border-radius: 2rem; border: 2px solid #3b82f6; padding: 0.8rem 2rem;
+      font-size: 1.25rem; background: #fff; box-shadow: 0 2px 12px #3b82f610;
+      min-width: 260px; text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-box">
+    <div class="label">A) Perus pyöristetty</div>
+    <select class="dropdown-a">
+      <option>2025-V30</option>
+      <option>2025-V31</option>
+      <option selected>2025-V32</option>
+      <option>2025-V33</option>
+      <option>2025-V34</option>
+    </select>
+    <div class="sep"></div>
+
+    <div class="label">B) Emoji nykyiselle viikolle</div>
+    <select class="dropdown-b">
+      <option>2025-V30</option>
+      <option>2025-V31</option>
+      <option selected>⭐ 2025-V32</option>
+      <option>2025-V33</option>
+      <option>2025-V34</option>
+    </select>
+    <div class="sep"></div>
+
+    <div class="label">C) Boldattu nykyviikko (jos selain tukee)</div>
+    <select class="dropdown-c" id="dropdown-c">
+      <option>2025-V30</option>
+      <option>2025-V31</option>
+      <option selected style="font-weight:bold;">2025-V32</option>
+      <option>2025-V33</option>
+      <option>2025-V34</option>
+    </select>
+    <div class="sep"></div>
+
+    <div class="label">D) Isompi/keskitetty, varjo, blue border</div>
+    <select class="dropdown-d">
+      <option>2025-V30</option>
+      <option>2025-V31</option>
+      <option selected>2025-V32</option>
+      <option>2025-V33</option>
+      <option>2025-V34</option>
+    </select>
+  </div>
+</body>
+</html>
+```
+**Voit avata tämän tiedoston selaimessa ja vertailla helposti, miltä eri dropdownit näyttävät.**  
+Halutessasi voit yhdistellä ominaisuuksia (esim. emoji + isompi + keskitys tms).
