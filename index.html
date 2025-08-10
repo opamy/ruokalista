@@ -139,10 +139,10 @@
   const formatted = now.toLocaleDateString('fi-FI') + ' ' +
     now.toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' });
   statusEl.textContent = `Päivitetty ${formatted}`;
-  statusEl.className = 'text-gray-500';
+  statusEl.className = 'gray-600 dark:text-gray-400';
 } else {
   statusEl.textContent = 'Ei dataa löytynyt';
-  statusEl.className = 'text-gray-500';
+  statusEl.className = 'gray-600 dark:text-gray-400';
 }
       } catch (error) {
         statusEl.textContent = `Virhe: ${error.message}`;
