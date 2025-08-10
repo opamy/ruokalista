@@ -30,57 +30,42 @@
     .loading {
       opacity: 0.6;
     }
-    /* dropdownkikkailua */
- .plain-select {
-  border: 2px solid #d1d5db;
-  background: #f3f4f6;
-  color: #222;
-  padding: 0.5rem 2rem 0.5rem 1rem;
-  font-size: 1.05rem;
-  font-family: inherit; /* ottaa saman fontin kuin muu UI */
-  min-width: 200px;
-  margin: 0 auto;
-  display: block;
-  font-weight: 600;
 
-  text-align: center;
-  text-align-last: center;
-
-  border-radius: 0.25rem;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  box-shadow: none;
-
-  transition: border-color 0.15s;
-  position: relative;
-}
-
-/* Väkänen CSS:llä */
-.plain-select::after {
-  content: "▼";
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  font-size: 0.8rem;
-  color: currentColor;
-}
-
-.plain-select:focus {
-  outline: 2px solid #2563eb;
-  border-color: #2563eb;
-}
-
-.dark .plain-select {
-  background: #1f2937;
-  color: #f3f4f6;
-  border-color: #374151;
-}
-
-
-    option { color: #111; text-align: left; }
+    /* Perus pyöristetty dropdown sivun väreillä */
+    .dropdown-a {
+      border-radius: 0.75rem;
+      border: 1px solid #d1d5db;
+      padding: 0.5rem 2.5rem 0.5rem 1rem;
+      font-size: 1rem;
+      background: #f3f4f6;
+      color: #222;
+      min-width: 200px;
+      margin: 0 auto;
+      display: block;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      font-weight: 600;
+      text-align: center;
+      background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%239CA3AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1.2em;
+      box-shadow: 0 1px 2px 0 #0001;
+      transition: border-color 0.15s;
+    }
+    .dropdown-a:focus {
+      outline: 2px solid #2563eb;
+      border-color: #2563eb;
+    }
+    .dark .dropdown-a {
+      background: #1f2937;
+      color: #f3f4f6;
+      border-color: #374151;
+      background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%23ccc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      box-shadow: 0 1px 2px 0 #0003;
+    }
+    option { color: #111; text-align: center; }
     .dark option { color: #fafafa; }
     .week-info {
       margin-top: 1.5rem;
@@ -112,7 +97,7 @@
         <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
           <h3 class="font-semibold mb-3 text-center">Valitse viikko:</h3>
           <div class="flex justify-center">
-            <select id="weekDropdown" class="plain-select"></select>
+            <select id="weekDropdown" class="dropdown-a"></select>
           </div>
           <div class="week-info" id="currentWeekInfo"></div>
         </div>
@@ -134,7 +119,7 @@
   </div>
   <script type="module">
     // ============ MUUTA NÄMÄ OMAAN KÄYTTÖÖSI ============
-    const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/10bBmmXNo8YWJKgak6MT1znba_dE1Ft-eyAfM-qNjqqU/edit?gid=0#gid=0';
+    const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit#gid=0';
     const WEEK_COUNT = 20; // Kuinka monta viikkoa näytetään valitsimessa
     // =====================================================
 
