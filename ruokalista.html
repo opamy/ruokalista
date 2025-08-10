@@ -20,22 +20,6 @@
       background: #1f2937;
       color: #f3f4f6;
     }
-    .editable:focus {
-      outline: none;
-      border-color: #5D5CDE;
-      background: white;
-      box-shadow: 0 0 0 3px rgba(93, 92, 222, 0.1);
-    }
-    .dark .editable:focus {
-      background: #111827;
-    }
-    .editable:empty:before {
-      content: attr(data-placeholder);
-      color: #9ca3af;
-    }
-    .dark .editable:empty:before {
-      color: #6b7280;
-    }
     .readonly {
       background: #f3f4f6 !important;
       cursor: not-allowed;
@@ -46,27 +30,20 @@
     .loading {
       opacity: 0.6;
     }
-    .week-tab {
-      transition: all 0.2s;
-    }
-    .week-tab.active {
-      background: #3b82f6;
-      color: white;
-    }
-    .week-tab:not(.active):hover {
-      background: #e5e7eb;
-    }
-    .dark .week-tab:not(.active):hover {
-      background: #374151;
-    }
+    .week-tab { transition: all 0.2s; }
+    .week-tab.active { background: #3b82f6; color: white; }
+    .week-tab:not(.active):hover { background: #e5e7eb; }
+    .dark .week-tab:not(.active):hover { background: #374151; }
   </style>
 </head>
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
   <div class="min-h-screen p-4">
     <div class="max-w-4xl mx-auto">
       <div class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">Viikon Ruokalista</h1>
-        <p class="text-gray-600 dark:text-gray-400">Arkipäivät • <span id="updateStatus" class="text-gray-600 dark:text-gray-400">Ladataan tietoja...</span></p>
+        <h1 class="text-4xl font-bold mb-2">Viikon Ruokalista</h1>
+        <p class="text-gray-600 dark:text-gray-400">
+          Arkipäivät • <span id="updateStatus">Ladataan tietoja...</span>
+        </p>
       </div>
 
       <!-- Viikkovalitsin -->
@@ -76,7 +53,7 @@
           <div id="weekTabs" class="flex flex-wrap justify-center gap-2"></div>
           <div class="mt-3 text-center">
             <span class="text-sm text-gray-500 dark:text-gray-400">
-              Saatavilla olevat välilehdet: <span id="availableSheetsInfo">Ladataan...</span>
+              Luo uusi välilehti Sheetsiin muodossa 2025-V32 jne.
             </span>
           </div>
         </div>
@@ -98,15 +75,11 @@
   </div>
 
   <script type="module">
-    // ============ KONFIGURAATIO - VAIHDA TÄMÄ OMAAN SHEETS-LINKKIISI ============
-    const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit#gid=0';
+    // ============ MUUTA NÄMÄ OMAAN KÄYTTÖÖSI ============
+    const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/10bBmmXNo8YWJKgak6MT1znba_dE1Ft-eyAfM-qNjqqU/edit?gid=0#gid=0';
     const START_WEEK = '2025-V32'; // Aloitusviikko
-    // ========================================================================
-
-    // Globaalit muuttujat
-    let currentWeek = START_WEEK;
-    let availableWeeks = [];
-    let spreadsheetId = null;
+    const WEEK_COUNT = 20; // Kuinka monta viikkoa näytetään valitsimessa
+    // =====================================================
 
     // Tumma tila automaattisesti
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
@@ -123,7 +96,6 @@
       { name: "Torstai" },
       { name: "Perjantai" }
     ];
-    
     const fields = [
       { key: "ruoka", label: "Ruoka", placeholder: "Ladataan..." },
       { key: "kuka", label: "Kuka tekee", placeholder: "Ladataan..." },
@@ -131,42 +103,30 @@
       { key: "ohjeet", label: "Ohjeet", placeholder: "Ladataan..." }
     ];
 
-    // Renderöi kentät
-    function renderDays() {
-      let html = "";
-      days.forEach((day, dayIndex) => {
-        html += `<div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-          <h2 class="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">${day.name}</h2>
-          <div class="grid md:grid-cols-2 gap-6">`;
-        
-        fields.slice(0,2).forEach((field) => {
-          html += `<div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">${field.label}</label>
-            <div class="editable readonly text-base" 
-                 data-day="${dayIndex}" 
-                 data-field="${field.key}"
-                 data-placeholder="${field.placeholder}"></div>
-          </div>`;
+    // Globaalit muuttujat
+    let currentWeek = START_WEEK;
+    let spreadsheetId = null;
+    let availableWeeks = [];
+
+    // Luo viikkolista muodossa [{name, sheetName}]
+    function generateWeekList(startWeek, count) {
+      const weeks = [];
+      const [year, weekStr] = startWeek.split('-V');
+      let currentYear = parseInt(year, 10);
+      let currentWeekNum = parseInt(weekStr, 10);
+
+      for (let i = 0; i < count; i++) {
+        weeks.push({
+          name: `${currentYear}-V${currentWeekNum.toString().padStart(2, '0')}`,
+          sheetName: `${currentYear}-V${currentWeekNum.toString().padStart(2, '0')}`
         });
-        
-        html += `</div>
-          <div class="mt-4">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">${fields[2].label}</label>
-            <div class="editable readonly text-base" 
-                 data-day="${dayIndex}" 
-                 data-field="${fields[2].key}"
-                 data-placeholder="${fields[2].placeholder}"></div>
-          </div>
-          <div class="mt-4">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">${fields[3].label}</label>
-            <div class="editable readonly text-base min-h-20" 
-                 data-day="${dayIndex}" 
-                 data-field="${fields[3].key}"
-                 data-placeholder="${fields[3].placeholder}"></div>
-          </div>
-        </div>`;
-      });
-      document.getElementById('ruokaviikko').innerHTML = html;
+        currentWeekNum++;
+        if (currentWeekNum > 52) {
+          currentWeekNum = 1;
+          currentYear++;
+        }
+      }
+      return weeks;
     }
 
     // Poimi Spreadsheet ID URL:sta
@@ -175,77 +135,68 @@
       return match ? match[1] : null;
     }
 
-    // Luo viikkojen lista aloittaen 2025-V32:sta
-    function generateWeekList(startWeek, count = 20) {
-      const weeks = [];
-      const [year, weekStr] = startWeek.split('-V');
-      let currentYear = parseInt(year);
-      let currentWeek = parseInt(weekStr);
-
-      for (let i = 0; i < count; i++) {
-        weeks.push(`${currentYear}-V${currentWeek.toString().padStart(2, '0')}`);
-        
-        currentWeek++;
-        // Jos viikko ylittää 52, siirry seuraavaan vuoteen
-        if (currentWeek > 52) {
-          currentWeek = 1;
-          currentYear++;
-        }
-      }
-
-      return weeks;
-    }
-
-    // Testaa onko välilehti olemassa yrittämällä hakea sitä
-    async function testSheetExists(sheetName) {
-      try {
-        // Yritä hakea data suoraan välilehden nimellä
-        const encodedSheetName = encodeURIComponent(sheetName);
-        const csvUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodedSheetName}`;
-        
-        const response = await fetch(csvUrl);
-        
-        // Jos vastaus on ok ja sisältää dataa, välilehti on olemassa
-        if (response.ok) {
-          const text = await response.text();
-          // Tarkista että se ei ole tyhjä tai virheviesti
-          return text.length > 0 && !text.includes('Invalid') && !text.includes('Error');
-        }
-        return false;
-      } catch (error) {
-        return false;
-      }
-    }
-
-    // Hae saatavilla olevat välilehdet
-    async function getAvailableSheets() {
-      const statusEl = document.getElementById('availableSheetsInfo');
-      statusEl.textContent = 'Tarkistetaan välilehtiä...';
-
-      const possibleWeeks = generateWeekList(START_WEEK, 20);
-      const availableWeeksList = [];
-
-      // Testaa jokainen viikko
-      for (const week of possibleWeeks) {
-        const exists = await testSheetExists(week);
-        if (exists) {
-          availableWeeksList.push({
-            name: week,
-            sheetName: week
-          });
-        }
-      }
-
-      // Jos ei löydy yhtään välilehteä, lisää aloitusviikko oletuksena
-      if (availableWeeksList.length === 0) {
-        availableWeeksList.push({
-          name: START_WEEK,
-          sheetName: START_WEEK
+    // Renderöi viikonpäivät ja kentät
+    function renderDays() {
+      let html = "";
+      days.forEach((day, dayIndex) => {
+        html += `<div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+          <h2 class="text-2xl font-semibold mb-4">${day.name}</h2>
+          <div class="grid md:grid-cols-2 gap-6">`;
+        fields.slice(0,2).forEach((field) => {
+          html += `<div>
+            <label class="block text-sm font-medium mb-2">${field.label}</label>
+            <div class="editable readonly text-base" data-day="${dayIndex}" data-field="${field.key}" data-placeholder="${field.placeholder}"></div>
+          </div>`;
         });
-      }
+        html += `</div>
+          <div class="mt-4">
+            <label class="block text-sm font-medium mb-2">${fields[2].label}</label>
+            <div class="editable readonly text-base" data-day="${dayIndex}" data-field="${fields[2].key}" data-placeholder="${fields[2].placeholder}"></div>
+          </div>
+          <div class="mt-4">
+            <label class="block text-sm font-medium mb-2">${fields[3].label}</label>
+            <div class="editable readonly text-base min-h-20" data-day="${dayIndex}" data-field="${fields[3].key}" data-placeholder="${fields[3].placeholder}"></div>
+          </div>
+        </div>`;
+      });
+      document.getElementById('ruokaviikko').innerHTML = html;
+    }
 
-      statusEl.textContent = availableWeeksList.map(w => w.name).join(', ');
-      return availableWeeksList;
+    // Renderöi viikkovalitsin
+    function renderWeekTabs() {
+      const tabsContainer = document.getElementById('weekTabs');
+      let tabsHtml = '';
+      availableWeeks.forEach(week => {
+        const isActive = week.name === currentWeek;
+        const activeClass = isActive ? 'active' : '';
+        tabsHtml += `
+          <button class="week-tab ${activeClass} px-4 py-2 rounded-lg text-sm font-medium transition-colors" 
+                  data-week="${week.name}" 
+                  data-sheet="${week.sheetName}">
+            ${week.name}
+          </button>
+        `;
+      });
+      tabsContainer.innerHTML = tabsHtml;
+      document.querySelectorAll('.week-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+          const weekName = this.getAttribute('data-week');
+          selectWeek(weekName);
+        });
+      });
+    }
+
+    // Valitse viikko
+    function selectWeek(weekName) {
+      currentWeek = weekName;
+      document.querySelectorAll('.week-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.getAttribute('data-week') === weekName) {
+          tab.classList.add('active');
+        }
+      });
+      loadData();
+      localStorage.setItem('selectedWeek', weekName);
     }
 
     // Yksinkertainen CSV-parseri
@@ -255,7 +206,6 @@
         const result = [];
         let current = '';
         let inQuotes = false;
-        
         for (let i = 0; i < line.length; i++) {
           const char = line[i];
           if (char === '"') {
@@ -272,54 +222,6 @@
       });
     }
 
-    // Renderöi viikkovalitsin
-    function renderWeekTabs() {
-      const tabsContainer = document.getElementById('weekTabs');
-
-      let tabsHtml = '';
-      availableWeeks.forEach(week => {
-        const isActive = week.name === currentWeek;
-        const activeClass = isActive ? 'active' : '';
-        
-        tabsHtml += `
-          <button class="week-tab ${activeClass} px-4 py-2 rounded-lg text-sm font-medium transition-colors" 
-                  data-week="${week.name}" 
-                  data-sheet="${week.sheetName}">
-            ${week.name}
-          </button>
-        `;
-      });
-      
-      tabsContainer.innerHTML = tabsHtml;
-
-      // Lisää click-eventit
-      document.querySelectorAll('.week-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-          const weekName = this.getAttribute('data-week');
-          selectWeek(weekName);
-        });
-      });
-    }
-
-    // Valitse viikko
-    function selectWeek(weekName) {
-      currentWeek = weekName;
-      
-      // Päivitä aktiivinen välilehti
-      document.querySelectorAll('.week-tab').forEach(tab => {
-        tab.classList.remove('active');
-        if (tab.getAttribute('data-week') === weekName) {
-          tab.classList.add('active');
-        }
-      });
-      
-      // Lataa valitun viikon tiedot
-      loadData();
-      
-      // Tallenna valinta
-      localStorage.setItem('selectedWeek', weekName);
-    }
-
     // Päivitä yksittäinen kenttä
     function updateField(dayIndex, fieldKey, value) {
       const element = document.querySelector(`[data-day="${dayIndex}"][data-field="${fieldKey}"]`);
@@ -330,25 +232,12 @@
 
     // Täytä kentät Sheets-datalla
     function populateFields(sheetData) {
-      // Tyhjennä ensin kaikki kentät
-      document.querySelectorAll('.editable').forEach(el => {
-        el.textContent = '';
-      });
-
-      // Oletetaan että data on muodossa:
-      // Rivi 0: [Päivä, Ruoka, Kuka, Tarvikkeet, Ohjeet] (otsikot - ohitetaan)
-      // Rivi 1: [Maanantai, Spagetti, Äiti, Pasta;Jauheliha, Keitä pasta...]
-      // jne.
-      
+      document.querySelectorAll('.editable').forEach(el => { el.textContent = ''; });
       sheetData.forEach((row, rowIndex) => {
         if (rowIndex === 0) return; // Ohita otsikkorivi
-        
         const dayIndex = rowIndex - 1;
-        if (dayIndex >= 5) return; // Vain 5 päivää
-        
-        const [dayName, ruoka, kuka, tarvikkeet, ohjeet] = row;
-        
-        // Päivitä kentät
+        if (dayIndex >= 5) return;
+        const [_, ruoka, kuka, tarvikkeet, ohjeet] = row;
         updateField(dayIndex, 'ruoka', ruoka);
         updateField(dayIndex, 'kuka', kuka);
         updateField(dayIndex, 'tarvikkeet', tarvikkeet);
@@ -359,87 +248,35 @@
     // Lataa tiedot Google Sheetsistä
     async function loadData() {
       if (!currentWeek) return;
-      
       const statusEl = document.getElementById('updateStatus');
       const container = document.getElementById('ruokaviikko');
-      
       statusEl.textContent = 'Ladataan tietoja...';
-      statusEl.className = 'text-gray-600 dark:text-gray-400';
       container.classList.add('loading');
-
       try {
-        // Etsi valittu viikko
-        const selectedWeek = availableWeeks.find(w => w.name === currentWeek);
-        const sheetName = selectedWeek ? selectedWeek.sheetName : currentWeek;
-
-        // Käytä CSV-exporttia valitulla välilehdellä
+        const sheetName = currentWeek;
         const encodedSheetName = encodeURIComponent(sheetName);
         const csvUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:csv&sheet=${encodedSheetName}`;
-        
         const response = await fetch(csvUrl);
-        
-        if (!response.ok) {
-          throw new Error(`Välilehteä "${sheetName}" ei löydy tai dokumentti ei ole julkinen`);
-        }
-        
+        if (!response.ok) throw new Error(`Viikkoa "${sheetName}" ei löydy tai dokumentti ei ole julkinen`);
         const csvData = await response.text();
-        
-        if (csvData.includes('Invalid') || csvData.includes('Error')) {
-          throw new Error(`Välilehteä "${sheetName}" ei löydy`);
-        }
-        
+        if (csvData.includes('Invalid') || csvData.includes('Error')) throw new Error(`Viikkoa "${sheetName}" ei löydy`);
         const rows = parseCSV(csvData);
-        
         if (rows.length > 0) {
           populateFields(rows);
           const now = new Date().toLocaleTimeString('fi-FI');
           statusEl.textContent = `${currentWeek} - Päivitetty ${now}`;
-          statusEl.className = 'text-gray-600 dark:text-gray-400';
         } else {
-          statusEl.textContent = `${currentWeek} - Ei dataa löytynyt`;
-          statusEl.className = 'text-gray-600 dark:text-gray-400';
+          statusEl.textContent = `${currentWeek} - Ei dataa`;
         }
       } catch (error) {
-        console.error('Virhe ladattaessa dataa:', error);
-        statusEl.textContent = `${currentWeek} - ${error.message}`;
-        statusEl.className = 'text-gray-600 dark:text-gray-400';
+        statusEl.textContent = `Virhe (${currentWeek}): ${error.message}`;
+        document.querySelectorAll('.editable').forEach(el => { el.textContent = ''; });
       } finally {
         container.classList.remove('loading');
       }
     }
 
-    // Alusta sovellus
-    async function initApp() {
-      spreadsheetId = extractSpreadsheetId(GOOGLE_SHEETS_URL);
-      if (!spreadsheetId) {
-        document.getElementById('updateStatus').textContent = 'Virheellinen Google Sheets URL';
-        return;
-      }
-
-      renderDays();
-      
-      // Hae saatavilla olevat välilehdet
-      availableWeeks = await getAvailableSheets();
-      
-      // Lataa tallennettu viikkovalinta tai käytä aloitusviikkoa
-      const savedWeek = localStorage.getItem('selectedWeek');
-      if (savedWeek && availableWeeks.some(w => w.name === savedWeek)) {
-        currentWeek = savedWeek;
-      } else {
-        currentWeek = availableWeeks[0]?.name || START_WEEK;
-      }
-      
-      renderWeekTabs();
-      loadData();
-      
-      // Automaattinen päivitys 5 minuutin välein
-      setInterval(loadData, 5 * 60 * 1000);
-    }
-
-    // Event listeners
-    document.getElementById('paivita').addEventListener('click', loadData);
-
-    // Kopioi
+    // Kopioi ruokalista leikepöydälle
     document.getElementById('kopioi').onclick = function() {
       let output = `VIIKON RUOKALISTA - ${currentWeek}\n\n`;
       const dayBlocks = document.querySelectorAll('.bg-gray-50, .dark\\:bg-gray-800');
@@ -454,11 +291,9 @@
     };
 
     // Tulosta
-    document.getElementById('tulosta').onclick = function() {
-      window.print();
-    };
+    document.getElementById('tulosta').onclick = function() { window.print(); };
 
-    // Toast
+    // Toast-ilmoitus
     function showToast(message) {
       const toast = document.createElement('div');
       toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300';
@@ -468,6 +303,30 @@
         toast.style.transform = 'translateX(400px)'; 
         setTimeout(() => toast.remove(), 300); 
       }, 2000);
+    }
+
+    // Päivitä-nappi
+    document.getElementById('paivita').addEventListener('click', loadData);
+
+    // Alusta sovellus
+    function initApp() {
+      spreadsheetId = extractSpreadsheetId(GOOGLE_SHEETS_URL);
+      if (!spreadsheetId) {
+        document.getElementById('updateStatus').textContent = 'Virheellinen Google Sheets URL';
+        return;
+      }
+      renderDays();
+      availableWeeks = generateWeekList(START_WEEK, WEEK_COUNT);
+      // Lataa tallennettu viikkovalinta tai käytä aloitusviikkoa
+      const savedWeek = localStorage.getItem('selectedWeek');
+      if (savedWeek && availableWeeks.some(w => w.name === savedWeek)) {
+        currentWeek = savedWeek;
+      } else {
+        currentWeek = availableWeeks[0]?.name || START_WEEK;
+      }
+      renderWeekTabs();
+      loadData();
+      setInterval(loadData, 5 * 60 * 1000);
     }
 
     // Käynnistä sovellus
