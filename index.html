@@ -133,15 +133,17 @@
         const csvData = await response.text();
         const rows = Papa.parse(csvData, { skipEmptyLines: true }).data;
         if (rows.length > 1) {
-          renderDays(rows);
-          populateFields(rows);
-          const now = new Date().toLocaleTimeString('fi-FI');
-          statusEl.textContent = `Päivitetty ${now}`;
-          statusEl.className = 'text-gray-500';
-        } else {
-          statusEl.textContent = 'Ei dataa löytynyt';
-          statusEl.className = 'text-orange-500';
-        }
+  renderDays(rows);
+  populateFields(rows);
+  const now = new Date();
+  const formatted = now.toLocaleDateString('fi-FI') + ' ' +
+    now.toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' });
+  statusEl.textContent = `Päivitetty ${formatted}`;
+  statusEl.className = 'text-gray-500';
+} else {
+  statusEl.textContent = 'Ei dataa löytynyt';
+  statusEl.className = 'text-gray-500';
+}
       } catch (error) {
         statusEl.textContent = `Virhe: ${error.message}`;
         statusEl.className = 'text-red-500';
