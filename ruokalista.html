@@ -1,322 +1,500 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="fi">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.7">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; min-height: 15.0px}
+  <meta charset="UTF-8">
+  <title>Viikon Ruokalista</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif }
+    .editable {
+      min-height: 40px;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+      background: #f9fafb;
+      transition: all 0.2s;
+    }
+    .dark .editable {
+      border-color: #374151;
+      background: #1f2937;
+      color: #f3f4f6;
+    }
+    .editable:focus {
+      outline: none;
+      border-color: #5D5CDE;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(93, 92, 222, 0.1);
+    }
+    .dark .editable:focus {
+      background: #111827;
+    }
+    .editable:empty:before {
+      content: attr(data-placeholder);
+      color: #9ca3af;
+    }
+    .dark .editable:empty:before {
+      color: #6b7280;
+    }
+    .readonly {
+      background: #f3f4f6 !important;
+      cursor: not-allowed;
+    }
+    .dark .readonly {
+      background: #374151 !important;
+    }
+    .loading {
+      opacity: 0.6;
+    }
+    .week-tab {
+      transition: all 0.2s;
+    }
+    .week-tab.active {
+      background: #3b82f6;
+      color: white;
+    }
+    .week-tab:not(.active):hover {
+      background: #e5e7eb;
+    }
+    .dark .week-tab:not(.active):hover {
+      background: #374151;
+    }
   </style>
 </head>
-<body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html lang="fi"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="UTF-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;Viikon Ruokalista&lt;/title&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;style&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>* { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif }</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.editable {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>min-height: 40px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-radius: 6px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border: 1px solid #e5e7eb;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #f9fafb;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>transition: all 0.2s;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.dark .editable {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-color: #374151;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #1f2937;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: #f3f4f6;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.editable:focus {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>outline: none;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-color: #5D5CDE;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: white;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>box-shadow: 0 0 0 3px rgba(93, 92, 222, 0.1);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.dark .editable:focus {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #111827;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.editable:empty:before {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>content: attr(data-placeholder);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: #9ca3af;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.dark .editable:empty:before {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: #6b7280;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.readonly {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #f3f4f6 !important;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>cursor: not-allowed;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.dark .readonly {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #374151 !important;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.loading {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>opacity: 0.6;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="min-h-screen p-4"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="max-w-4xl mx-auto"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="text-center mb-8"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2"&gt;Viikon Ruokalista&lt;/h1&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;p class="text-gray-600 dark:text-gray-400"&gt;Arkipäivät • &lt;span id="updateStatus"&gt;Ladataan tietoja...&lt;/span&gt;&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="space-y-6" id="ruokaviikko"&gt;&lt;/div&gt;</p>
-<p class="p2"><span class="Apple-converted-space">      </span></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="mt-8 text-center space-y-4"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="flex flex-wrap justify-center gap-3"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;button id="paivita" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors"&gt;🔄 Päivitä tiedot&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;button id="kopioi" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors"&gt;📋 Kopioi sisältö&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;button id="tulosta" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors"&gt;🖨️ Tulosta&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;p class="text-sm text-gray-500 dark:text-gray-400"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>💡 Tiedot päivittyvät automaattisesti Google Sheetsistä. Klikkaa "Päivitä tiedot" saadaksesi uusimmat tiedot.</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;script type="module"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// ============ KONFIGURAATIO - VAIHDA TÄMÄ OMAAN SHEETS-LINKKIISI ============</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const GOOGLE_SHEETS_URL = '<a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vRuJ42x7lep6sVX5NmlCWwghH-chQv9hDWZ6TVOTKLtcFrDxxSSr0TSN5GPKz6q5m9tkNxCzPi5NAzo/pub?gid=0&amp;single=true&amp;output=csv">https://docs.google.com/spreadsheets/d/e/2PACX-1vRuJ42x7lep6sVX5NmlCWwghH-chQv9hDWZ6TVOTKLtcFrDxxSSr0TSN5GPKz6q5m9tkNxCzPi5NAzo/pub?gid=0&amp;single=true&amp;output=csv</a>';</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// ========================================================================</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Tumma tila automaattisesti</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (window.matchMedia &amp;&amp; window.matchMedia('(prefers-color-scheme: dark)').matches)</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.documentElement.classList.add('dark');</p>
-<p class="p1"><span class="Apple-converted-space">    </span>window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.documentElement.classList.toggle('dark', e.matches);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Päivien ja kenttien määrittely</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const days = [</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Maanantai" },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Tiistai" },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Keskiviikko" },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Torstai" },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ name: "Perjantai" }</p>
-<p class="p1"><span class="Apple-converted-space">    </span>];</p>
-<p class="p2"><span class="Apple-converted-space">    </span></p>
-<p class="p1"><span class="Apple-converted-space">    </span>const fields = [</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ key: "ruoka", label: "Ruoka", placeholder: "Ladataan..." },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ key: "kokki”, label: "Kuka tekee", placeholder: "Ladataan..." },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ key: "tarvikkeet", label: "Tarvikkeet", placeholder: "Ladataan..." },</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{ key: "ohjeet", label: "Ohjeet", placeholder: "Ladataan..." }</p>
-<p class="p1"><span class="Apple-converted-space">    </span>];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Renderöi kentät</p>
-<p class="p1"><span class="Apple-converted-space">    </span>function renderDays() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>let html = "";</p>
-<p class="p1"><span class="Apple-converted-space">      </span>days.forEach((day, dayIndex) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>html += `&lt;div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;h2 class="text-2xl font-semibold mb-4 text-gray-900 dark:text-white"&gt;${day.name}&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="grid md:grid-cols-2 gap-6"&gt;`;</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>fields.slice(0,2).forEach((field) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>html += `&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"&gt;${field.label}&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="editable readonly text-base"<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                 </span>data-day="${dayIndex}"<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                 </span>data-field="${field.key}"</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>data-placeholder="${field.placeholder}"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;`;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>html += `&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="mt-4"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"&gt;${fields[2].label}&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="editable readonly text-base"<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                 </span>data-day="${dayIndex}"<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                 </span>data-field="${fields[2].key}"</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>data-placeholder="${fields[2].placeholder}"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="mt-4"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"&gt;${fields[3].label}&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>&lt;div class="editable readonly text-base min-h-20"<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                 </span>data-day="${dayIndex}"<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">                 </span>data-field="${fields[3].key}"</p>
-<p class="p1"><span class="Apple-converted-space">                 </span>data-placeholder="${fields[3].placeholder}"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;`;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>});</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById('ruokaviikko').innerHTML = html;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Poimi Spreadsheet ID URL:sta</p>
-<p class="p1"><span class="Apple-converted-space">    </span>function extractSpreadsheetId(url) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>return match ? match[1] : null;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Yksinkertainen CSV-parseri</p>
-<p class="p1"><span class="Apple-converted-space">    </span>function parseCSV(csvText) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const lines = csvText.trim().split('\n');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>return lines.map(line =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const result = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let current = '';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let inQuotes = false;</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>for (let i = 0; i &lt; line.length; i++) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const char = line[i];</p>
-<p class="p1"><span class="Apple-converted-space">          </span>if (char === '"') {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>inQuotes = !inQuotes;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>} else if (char === ',' &amp;&amp; !inQuotes) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>result.push(current.trim().replace(/^"|"$/g, ''));</p>
-<p class="p1"><span class="Apple-converted-space">            </span>current = '';</p>
-<p class="p1"><span class="Apple-converted-space">          </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>current += char;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>result.push(current.trim().replace(/^"|"$/g, ''));</p>
-<p class="p1"><span class="Apple-converted-space">        </span>return result;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>});</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Päivitä yksittäinen kenttä</p>
-<p class="p1"><span class="Apple-converted-space">    </span>function updateField(dayIndex, fieldKey, value) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const element = document.querySelector(`[data-day="${dayIndex}"][data-field="${fieldKey}"]`);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>if (element) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>element.textContent = value || '';</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Täytä kentät Sheets-datalla</p>
-<p class="p1"><span class="Apple-converted-space">    </span>function populateFields(sheetData) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>// Tyhjennä ensin kaikki kentät</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.querySelectorAll('.editable').forEach(el =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>el.textContent = '';</p>
-<p class="p1"><span class="Apple-converted-space">      </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>// Oletetaan että data on muodossa:</p>
-<p class="p1"><span class="Apple-converted-space">      </span>// Rivi 0: [Päivä, Ruoka, Kuka, Tarvikkeet, Ohjeet] (otsikot - ohitetaan)</p>
-<p class="p1"><span class="Apple-converted-space">      </span>// Rivi 1: [Maanantai, Spagetti, Äiti, Pasta;Jauheliha, Keitä pasta...]</p>
-<p class="p1"><span class="Apple-converted-space">      </span>// jne.</p>
-<p class="p2"><span class="Apple-converted-space">      </span></p>
-<p class="p1"><span class="Apple-converted-space">      </span>sheetData.forEach((row, rowIndex) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (rowIndex === 0) return; // Ohita otsikkorivi</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const dayIndex = rowIndex - 1;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (dayIndex &gt;= 5) return; // Vain 5 päivää</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const [dayName, ruoka, kuka, tarvikkeet, ohjeet] = row;</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Päivitä kentät</p>
-<p class="p1"><span class="Apple-converted-space">        </span>updateField(dayIndex, 'ruoka', ruoka);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>updateField(dayIndex, 'kuka', kuka);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>updateField(dayIndex, 'tarvikkeet', tarvikkeet);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>updateField(dayIndex, 'ohjeet', ohjeet);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>});</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Lataa tiedot Google Sheetsistä</p>
-<p class="p1"><span class="Apple-converted-space">    </span>async function loadData() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const statusEl = document.getElementById('updateStatus');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const container = document.getElementById('ruokaviikko');</p>
-<p class="p2"><span class="Apple-converted-space">      </span></p>
-<p class="p1"><span class="Apple-converted-space">      </span>statusEl.textContent = 'Ladataan tietoja...';</p>
-<p class="p1"><span class="Apple-converted-space">      </span>statusEl.className = 'text-blue-500';</p>
-<p class="p1"><span class="Apple-converted-space">      </span>container.classList.add('loading');</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>try {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const spreadsheetId = extractSpreadsheetId(GOOGLE_SHEETS_URL);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!spreadsheetId) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>throw new Error('Virheellinen Google Sheets URL');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Käytä CSV-exporttia</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const csvUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&amp;gid=0`;</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const response = await fetch(csvUrl);</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!response.ok) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>throw new Error(`Dokumentti ei ole julkinen tai sitä ei löydy (${response.status})`);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const csvData = await response.text();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const rows = parseCSV(csvData);</p>
-<p class="p2"><span class="Apple-converted-space">        </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (rows.length &gt; 0) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>populateFields(rows);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const now = new Date().toLocaleTimeString('fi-FI');</p>
-<p class="p1"><span class="Apple-converted-space">          </span>statusEl.textContent = `Päivitetty ${now}`;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>statusEl.className = 'text-green-500';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>statusEl.textContent = 'Ei dataa löytynyt';</p>
-<p class="p1"><span class="Apple-converted-space">          </span>statusEl.className = 'text-orange-500';</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">      </span>} catch (error) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>console.error('Virhe ladattaessa dataa:', error);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>statusEl.textContent = `Virhe: ${error.message}`;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>statusEl.className = 'text-red-500';</p>
-<p class="p1"><span class="Apple-converted-space">      </span>} finally {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>container.classList.remove('loading');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Event listeners</p>
-<p class="p1"><span class="Apple-converted-space">    </span>document.getElementById('paivita').addEventListener('click', loadData);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Kopioi</p>
-<p class="p1"><span class="Apple-converted-space">    </span>document.getElementById('kopioi').onclick = function() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>let output = 'VIIKON RUOKALISTA\n\n';</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const dayBlocks = document.querySelectorAll('.bg-gray-50, .dark\\:bg-gray-800');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>Array.from(dayBlocks).forEach((block) =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const day = block.querySelector('h2').textContent;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const [ruoka, kuka, tarvikkeet, ohjeet] = block.querySelectorAll('.editable');</p>
-<p class="p1"><span class="Apple-converted-space">        </span>output += `${day.toUpperCase()}\nRuoka: ${ruoka.textContent.trim()}\nKuka tekee: ${kuka.textContent.trim()}\nTarvikkeet: ${tarvikkeet.textContent.trim()}\nOhjeet: ${ohjeet.textContent.trim()}\n\n`;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>});</p>
-<p class="p1"><span class="Apple-converted-space">      </span>navigator.clipboard.writeText(output).then(() =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>showToast('Ruokalista kopioitu leikepöydälle!');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>});</p>
-<p class="p1"><span class="Apple-converted-space">    </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Tyhjennä kaikki</p>
-<p class="p1"><span class="Apple-converted-space">    </span>document.getElementById('tyhjenna').onclick = function() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>if (!confirm('Haluatko varmasti tyhjentää näytön? (Tämä ei muuta Google Sheetsiä)')) return;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.querySelectorAll('.editable').forEach(el =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>el.textContent = '';</p>
-<p class="p1"><span class="Apple-converted-space">      </span>});</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById('updateStatus').textContent = 'Näyttö tyhjennetty';</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.getElementById('updateStatus').className = 'text-gray-500';</p>
-<p class="p1"><span class="Apple-converted-space">      </span>showToast('Näyttö tyhjennetty!');</p>
-<p class="p1"><span class="Apple-converted-space">    </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Tulosta</p>
-<p class="p1"><span class="Apple-converted-space">    </span>document.getElementById('tulosta').onclick = function() {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>window.print();</p>
-<p class="p1"><span class="Apple-converted-space">    </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Toast</p>
-<p class="p1"><span class="Apple-converted-space">    </span>function showToast(message) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const toast = document.createElement('div');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300';</p>
-<p class="p1"><span class="Apple-converted-space">      </span>toast.textContent = message;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>document.body.appendChild(toast);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>setTimeout(() =&gt; {<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>toast.style.transform = 'translateX(400px)';<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">        </span>setTimeout(() =&gt; toast.remove(), 300);<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">      </span>}, 2000);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Alusta sivu</p>
-<p class="p1"><span class="Apple-converted-space">    </span>renderDays();</p>
-<p class="p2"><span class="Apple-converted-space">    </span></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Lataa tiedot heti sivun latautuessa</p>
-<p class="p1"><span class="Apple-converted-space">    </span>loadData();</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>// Päivitä tiedot automaattisesti 5 minuutin välein (valinnainen)</p>
-<p class="p1"><span class="Apple-converted-space">    </span>setInterval(loadData, 5 * 60 * 1000); // 5 minuuttia</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/script&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+  <div class="min-h-screen p-4">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">Viikon Ruokalista</h1>
+        <p class="text-gray-600 dark:text-gray-400">Arkipäivät • <span id="updateStatus">Ladataan tietoja...</span></p>
+      </div>
+
+      <!-- Viikkovalitsin -->
+      <div class="mb-6">
+        <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+          <h3 class="font-semibold mb-3 text-center">Valitse viikko:</h3>
+          <div id="weekTabs" class="flex flex-wrap justify-center gap-2"></div>
+          <div class="mt-3 text-center">
+            <span class="text-sm text-gray-500 dark:text-gray-400">
+              Nykyinen viikko: <span id="currentWeekInfo"></span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-6" id="ruokaviikko"></div>
+      
+      <div class="mt-8 text-center space-y-4">
+        <div class="flex flex-wrap justify-center gap-3">
+          <button id="paivita" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors">🔄 Päivitä tiedot</button>
+          <button id="kopioi" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors">📋 Kopioi sisältö</button>
+          <button id="tyhjenna" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg transition-colors">🗑️ Tyhjennä kaikki</button>
+          <button id="tulosta" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg transition-colors">🖨️ Tulosta</button>
+        </div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          💡 Tiedot päivittyvät automaattisesti Google Sheetsistä. Luo uusi välilehti Sheetsiin uutta viikkoa varten.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    // ============ KONFIGURAATIO - VAIHDA TÄMÄ OMAAN SHEETS-LINKKIISI ============
+    const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit#gid=0';
+    // ========================================================================
+
+    // Globaalit muuttujat
+    let currentWeek = null;
+    let availableWeeks = [];
+    let spreadsheetId = null;
+
+    // Tumma tila automaattisesti
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      document.documentElement.classList.add('dark');
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      document.documentElement.classList.toggle('dark', e.matches);
+    });
+
+    // Päivien ja kenttien määrittely
+    const days = [
+      { name: "Maanantai" },
+      { name: "Tiistai" },
+      { name: "Keskiviikko" },
+      { name: "Torstai" },
+      { name: "Perjantai" }
+    ];
+    
+    const fields = [
+      { key: "ruoka", label: "Ruoka", placeholder: "Ladataan..." },
+      { key: "kuka", label: "Kuka tekee", placeholder: "Ladataan..." },
+      { key: "tarvikkeet", label: "Tarvikkeet", placeholder: "Ladataan..." },
+      { key: "ohjeet", label: "Ohjeet", placeholder: "Ladataan..." }
+    ];
+
+    // Renderöi kentät
+    function renderDays() {
+      let html = "";
+      days.forEach((day, dayIndex) => {
+        html += `<div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+          <h2 class="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">${day.name}</h2>
+          <div class="grid md:grid-cols-2 gap-6">`;
+        
+        fields.slice(0,2).forEach((field) => {
+          html += `<div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">${field.label}</label>
+            <div class="editable readonly text-base" 
+                 data-day="${dayIndex}" 
+                 data-field="${field.key}"
+                 data-placeholder="${field.placeholder}"></div>
+          </div>`;
+        });
+        
+        html += `</div>
+          <div class="mt-4">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">${fields[2].label}</label>
+            <div class="editable readonly text-base" 
+                 data-day="${dayIndex}" 
+                 data-field="${fields[2].key}"
+                 data-placeholder="${fields[2].placeholder}"></div>
+          </div>
+          <div class="mt-4">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">${fields[3].label}</label>
+            <div class="editable readonly text-base min-h-20" 
+                 data-day="${dayIndex}" 
+                 data-field="${fields[3].key}"
+                 data-placeholder="${fields[3].placeholder}"></div>
+          </div>
+        </div>`;
+      });
+      document.getElementById('ruokaviikko').innerHTML = html;
+    }
+
+    // Poimi Spreadsheet ID URL:sta
+    function extractSpreadsheetId(url) {
+      const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      return match ? match[1] : null;
+    }
+
+    // Laske viikkonumero
+    function getWeekNumber(date) {
+      const d = new Date(date);
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() + 3 - (d.getDay() + 6) % 7);
+      const week1 = new Date(d.getFullYear(), 0, 4);
+      return 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
+    }
+
+    // Hae nykyinen viikko
+    function getCurrentWeek() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const week = getWeekNumber(now);
+      return `${year}-V${week.toString().padStart(2, '0')}`;
+    }
+
+    // Yksinkertainen CSV-parseri
+    function parseCSV(csvText) {
+      const lines = csvText.trim().split('\n');
+      return lines.map(line => {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+          const char = line[i];
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            result.push(current.trim().replace(/^"|"$/g, ''));
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        result.push(current.trim().replace(/^"|"$/g, ''));
+        return result;
+      });
+    }
+
+    // Hae saatavilla olevat välilehdet
+    async function getAvailableSheets() {
+      try {
+        // Hae välilehtien tiedot Sheets API:sta (julkinen)
+        const sheetsUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}?fields=sheets.properties`;
+        const response = await fetch(sheetsUrl);
+        
+        if (response.ok) {
+          const data = await response.json();
+          return data.sheets.map(sheet => ({
+            name: sheet.properties.title,
+            gid: sheet.properties.sheetId
+          }));
+        }
+      } catch (error) {
+        console.log('API ei toimi, käytetään oletusviikkoja');
+      }
+      
+      // Fallback: luo viikoita nykyhetkestä eteenpäin
+      const weeks = [];
+      const currentWeekNum = getCurrentWeek();
+      const now = new Date();
+      
+      // Lisää 4 viikkoa taaksepäin ja 8 viikkoa eteenpäin
+      for (let i = -4; i <= 8; i++) {
+        const weekDate = new Date(now.getTime() + (i * 7 * 24 * 60 * 60 * 1000));
+        const year = weekDate.getFullYear();
+        const week = getWeekNumber(weekDate);
+        const weekName = `${year}-V${week.toString().padStart(2, '0')}`;
+        weeks.push({
+          name: weekName,
+          gid: 0 // Käytä aina ensimmäistä välilehteä fallbackissa
+        });
+      }
+      
+      return weeks;
+    }
+
+    // Renderöi viikkovalitsin
+    function renderWeekTabs() {
+      const tabsContainer = document.getElementById('weekTabs');
+      const currentWeekInfo = document.getElementById('currentWeekInfo');
+      
+      // Järjestä viikot
+      const sortedWeeks = availableWeeks.sort((a, b) => {
+        // Yritä järjestää viikkojen mukaan jos mahdollista
+        const aMatch = a.name.match(/(\d{4})-V(\d{2})/);
+        const bMatch = b.name.match(/(\d{4})-V(\d{2})/);
+        
+        if (aMatch && bMatch) {
+          const aYear = parseInt(aMatch[1]);
+          const bYear = parseInt(bMatch[1]);
+          const aWeek = parseInt(aMatch[2]);
+          const bWeek = parseInt(bMatch[2]);
+          
+          if (aYear !== bYear) return aYear - bYear;
+          return aWeek - bWeek;
+        }
+        
+        return a.name.localeCompare(b.name);
+      });
+
+      let tabsHtml = '';
+      sortedWeeks.forEach(week => {
+        const isActive = week.name === currentWeek || (currentWeek === null && week.name === getCurrentWeek());
+        const activeClass = isActive ? 'active' : '';
+        
+        tabsHtml += `
+          <button class="week-tab ${activeClass} px-4 py-2 rounded-lg text-sm font-medium transition-colors" 
+                  data-week="${week.name}" 
+                  data-gid="${week.gid}">
+            ${week.name}
+          </button>
+        `;
+      });
+      
+      tabsContainer.innerHTML = tabsHtml;
+      currentWeekInfo.textContent = getCurrentWeek();
+
+      // Aseta nykyinen viikko jos ei ole asetettu
+      if (!currentWeek) {
+        const currentWeekObj = sortedWeeks.find(w => w.name === getCurrentWeek());
+        if (currentWeekObj) {
+          currentWeek = currentWeekObj.name;
+        } else {
+          currentWeek = sortedWeeks[sortedWeeks.length - 1]?.name || null;
+        }
+      }
+
+      // Lisää click-eventit
+      document.querySelectorAll('.week-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+          const weekName = this.getAttribute('data-week');
+          selectWeek(weekName);
+        });
+      });
+    }
+
+    // Valitse viikko
+    function selectWeek(weekName) {
+      currentWeek = weekName;
+      
+      // Päivitä aktiivinen välilehti
+      document.querySelectorAll('.week-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.getAttribute('data-week') === weekName) {
+          tab.classList.add('active');
+        }
+      });
+      
+      // Lataa valitun viikon tiedot
+      loadData();
+      
+      // Tallenna valinta
+      localStorage.setItem('selectedWeek', weekName);
+    }
+
+    // Päivitä yksittäinen kenttä
+    function updateField(dayIndex, fieldKey, value) {
+      const element = document.querySelector(`[data-day="${dayIndex}"][data-field="${fieldKey}"]`);
+      if (element) {
+        element.textContent = value || '';
+      }
+    }
+
+    // Täytä kentät Sheets-datalla
+    function populateFields(sheetData) {
+      // Tyhjennä ensin kaikki kentät
+      document.querySelectorAll('.editable').forEach(el => {
+        el.textContent = '';
+      });
+
+      // Oletetaan että data on muodossa:
+      // Rivi 0: [Päivä, Ruoka, Kuka, Tarvikkeet, Ohjeet] (otsikot - ohitetaan)
+      // Rivi 1: [Maanantai, Spagetti, Äiti, Pasta;Jauheliha, Keitä pasta...]
+      // jne.
+      
+      sheetData.forEach((row, rowIndex) => {
+        if (rowIndex === 0) return; // Ohita otsikkorivi
+        
+        const dayIndex = rowIndex - 1;
+        if (dayIndex >= 5) return; // Vain 5 päivää
+        
+        const [dayName, ruoka, kuka, tarvikkeet, ohjeet] = row;
+        
+        // Päivitä kentät
+        updateField(dayIndex, 'ruoka', ruoka);
+        updateField(dayIndex, 'kuka', kuka);
+        updateField(dayIndex, 'tarvikkeet', tarvikkeet);
+        updateField(dayIndex, 'ohjeet', ohjeet);
+      });
+    }
+
+    // Lataa tiedot Google Sheetsistä
+    async function loadData() {
+      if (!currentWeek) return;
+      
+      const statusEl = document.getElementById('updateStatus');
+      const container = document.getElementById('ruokaviikko');
+      
+      statusEl.textContent = 'Ladataan tietoja...';
+      statusEl.className = 'text-blue-500';
+      container.classList.add('loading');
+
+      try {
+        // Etsi valittu viikko
+        const selectedWeek = availableWeeks.find(w => w.name === currentWeek);
+        const gid = selectedWeek ? selectedWeek.gid : 0;
+
+        // Käytä CSV-exporttia valitulla välilehdellä
+        const csvUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=${gid}`;
+        
+        const response = await fetch(csvUrl);
+        
+        if (!response.ok) {
+          throw new Error(`Dokumentti ei ole julkinen tai välilehteä ei löydy (${response.status})`);
+        }
+        
+        const csvData = await response.text();
+        const rows = parseCSV(csvData);
+        
+        if (rows.length > 0) {
+          populateFields(rows);
+          const now = new Date().toLocaleTimeString('fi-FI');
+          statusEl.textContent = `${currentWeek} - Päivitetty ${now}`;
+          statusEl.className = 'text-green-500';
+        } else {
+          statusEl.textContent = `${currentWeek} - Ei dataa löytynyt`;
+          statusEl.className = 'text-orange-500';
+        }
+      } catch (error) {
+        console.error('Virhe ladattaessa dataa:', error);
+        statusEl.textContent = `${currentWeek} - Virhe: ${error.message}`;
+        statusEl.className = 'text-red-500';
+      } finally {
+        container.classList.remove('loading');
+      }
+    }
+
+    // Alusta sovellus
+    async function initApp() {
+      spreadsheetId = extractSpreadsheetId(GOOGLE_SHEETS_URL);
+      if (!spreadsheetId) {
+        document.getElementById('updateStatus').textContent = 'Virheellinen Google Sheets URL';
+        document.getElementById('updateStatus').className = 'text-red-500';
+        return;
+      }
+
+      renderDays();
+      
+      // Hae saatavilla olevat välilehdet
+      availableWeeks = await getAvailableSheets();
+      
+      // Lataa tallennettu viikkovalinta
+      const savedWeek = localStorage.getItem('selectedWeek');
+      if (savedWeek && availableWeeks.some(w => w.name === savedWeek)) {
+        currentWeek = savedWeek;
+      } else {
+        currentWeek = getCurrentWeek();
+        // Jos nykyistä viikkoa ei löydy, käytä viimeisintä
+        if (!availableWeeks.some(w => w.name === currentWeek)) {
+          currentWeek = availableWeeks[availableWeeks.length - 1]?.name || null;
+        }
+      }
+      
+      renderWeekTabs();
+      loadData();
+      
+      // Automaattinen päivitys 5 minuutin välein
+      setInterval(loadData, 5 * 60 * 1000);
+    }
+
+    // Event listeners
+    document.getElementById('paivita').addEventListener('click', loadData);
+
+    // Kopioi
+    document.getElementById('kopioi').onclick = function() {
+      let output = `VIIKON RUOKALISTA - ${currentWeek}\n\n`;
+      const dayBlocks = document.querySelectorAll('.bg-gray-50, .dark\\:bg-gray-800');
+      Array.from(dayBlocks).forEach((block) => {
+        const day = block.querySelector('h2').textContent;
+        const [ruoka, kuka, tarvikkeet, ohjeet] = block.querySelectorAll('.editable');
+        output += `${day.toUpperCase()}\nRuoka: ${ruoka.textContent.trim()}\nKuka tekee: ${kuka.textContent.trim()}\nTarvikkeet: ${tarvikkeet.textContent.trim()}\nOhjeet: ${ohjeet.textContent.trim()}\n\n`;
+      });
+      navigator.clipboard.writeText(output).then(() => {
+        showToast('Ruokalista kopioitu leikepöydälle!');
+      });
+    };
+
+    // Tyhjennä kaikki
+    document.getElementById('tyhjenna').onclick = function() {
+      if (!confirm('Haluatko varmasti tyhjentää näytön? (Tämä ei muuta Google Sheetsiä)')) return;
+      document.querySelectorAll('.editable').forEach(el => {
+        el.textContent = '';
+      });
+      document.getElementById('updateStatus').textContent = 'Näyttö tyhjennetty';
+      document.getElementById('updateStatus').className = 'text-gray-500';
+      showToast('Näyttö tyhjennetty!');
+    };
+
+    // Tulosta
+    document.getElementById('tulosta').onclick = function() {
+      window.print();
+    };
+
+    // Toast
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => { 
+        toast.style.transform = 'translateX(400px)'; 
+        setTimeout(() => toast.remove(), 300); 
+      }, 2000);
+    }
+
+    // Käynnistä sovellus
+    initApp();
+  </script>
 </body>
 </html>
