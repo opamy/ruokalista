@@ -10,7 +10,6 @@
     .editable {
       min-height: 40px;
       padding: 8px;
-      border-radius: 6px;
       border: 1px solid #e5e7eb;
       background: #f9fafb;
       transition: all 0.2s;
@@ -32,9 +31,19 @@
       opacity: 0.6;
     }
     select {
-      border-radius: 0.75rem; border: 1px solid #d1d5db; padding: 0.5rem 1rem;
-      font-size: 1.05rem; background: #f3f4f6; min-width: 200px; margin: 0 auto; display: block;
+      border: 1px solid #d1d5db;
+      background: #f3f4f6;
+      color: #222;
+      padding: 0.5rem 1rem;
+      font-size: 1.05rem;
+      min-width: 200px;
+      margin: 0 auto;
+      display: block;
       text-align: center;
+      border-radius: 0; /* Ei pyöristyksiä */
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
     }
     .dark select {
       background: #1f2937;
@@ -44,9 +53,19 @@
     option { color: #111; }
     .dark option { color: #fafafa; }
     .week-info {
-      margin-top: 1.5rem; color: #3b82f6; font-weight: 600; font-size: 1.08rem; text-align: center;
-      background: #f1f8fd; border-radius: 0.5rem; padding: 0.7em 0.3em;
+      margin-top: 1.5rem;
+      color: #2563eb; /* sama kuin bg-blue-600 */
+      font-weight: 600;
+      font-size: 1.08rem;
+      text-align: center;
+      background: #f1f8fd;
+      border-radius: 0.5rem;
+      padding: 0.7em 0.3em;
       letter-spacing: 0.01em;
+    }
+    .dark .week-info {
+      background: #1f2937;
+      color: #f3f4f6;
     }
   </style>
 </head>
@@ -56,7 +75,7 @@
       <div class="text-center mb-8">
         <h1 class="text-4xl font-bold mb-2">Viikon Ruokalista</h1>
         <p class="text-gray-600 dark:text-gray-400">
-          Arkipäivät • <span id="updateStatus">Ladataan tietoja...</span>
+          Arkipäivät
         </p>
       </div>
 
@@ -129,7 +148,6 @@
       return `${year}-V${week.toString().padStart(2, '0')}`;
     }
 
-    // Palauta annetun viikkonumeron ISO-viikon maanantai ja sunnuntai
     function getIsoWeekRangeByYearWeek(isoYear, isoWeek) {
       const simple = new Date(isoYear, 0, 1 + (isoWeek - 1) * 7);
       const dow = simple.getDay();
@@ -220,11 +238,9 @@
 
     function updateCurrentWeekInfo() {
       const info = document.getElementById('currentWeekInfo');
-      const todayWeek = getCurrentIsoWeek();
-      // Laske viikon päivämäärät
-      const [yearStr, weekStr] = todayWeek.split('-V');
+      const [yearStr, weekStr] = currentWeek.split('-V');
       const {monday, sunday} = getIsoWeekRangeByYearWeek(parseInt(yearStr,10), parseInt(weekStr,10));
-      info.textContent = `kuluva viikko: ${todayWeek} ${formatDate(monday)} - ${formatDate(sunday)}`;
+      info.textContent = `kuluva viikko: ${currentWeek} ${formatDate(monday)} - ${formatDate(sunday)}`;
     }
 
     function selectWeek(weekName) {
@@ -234,7 +250,6 @@
       localStorage.setItem('selectedWeek', weekName);
     }
 
-    // CSV-parser joka tukee rivinvaihtoja lainausmerkeissä
     function parseCSV(text) {
       const rows = [];
       let row = [];
@@ -314,9 +329,7 @@
 
     async function loadData() {
       if (!currentWeek) return;
-      const statusEl = document.getElementById('updateStatus');
       const container = document.getElementById('ruokaviikko');
-      statusEl.textContent = 'Ladataan tietoja...';
       container.classList.add('loading');
       try {
         const sheetName = currentWeek;
@@ -329,18 +342,10 @@
         const rows = parseCSV(csvData);
         if (rows.length > 0) {
           populateFields(rows);
-          const now = new Date();
-          const formatted = ('0'+now.getDate()).slice(-2) + '.' +
-                            ('0'+(now.getMonth()+1)).slice(-2) + '.' +
-                            now.getFullYear() + ' ' +
-                            ('0'+now.getHours()).slice(-2) + '.' +
-                            ('0'+now.getMinutes()).slice(-2);
-          statusEl.textContent = `${currentWeek} – Päivitetty ${formatted}`;
         } else {
-          statusEl.textContent = `${currentWeek} – Ei dataa`;
+          document.querySelectorAll('.editable').forEach(el => { el.innerHTML = ''; });
         }
       } catch (error) {
-        statusEl.textContent = `Virhe (${currentWeek}): ${error.message}`;
         document.querySelectorAll('.editable').forEach(el => { el.innerHTML = ''; });
       } finally {
         container.classList.remove('loading');
@@ -378,7 +383,7 @@
     function initApp() {
       spreadsheetId = extractSpreadsheetId(GOOGLE_SHEETS_URL);
       if (!spreadsheetId) {
-        document.getElementById('updateStatus').textContent = 'Virheellinen Google Sheets URL';
+        alert('Virheellinen Google Sheets URL');
         return;
       }
       renderDays();
