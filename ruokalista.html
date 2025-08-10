@@ -30,7 +30,7 @@
     .loading {
       opacity: 0.6;
     }
-    /* Dropdown styles with arrow and centered text */
+    /* Custom select with right arrow, text centered */
     .custom-select {
       border: 1px solid #d1d5db;
       background: #f3f4f6;
@@ -45,7 +45,7 @@
       appearance: none;
       -webkit-appearance: none;
       -moz-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg fill='none' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M19 9L12 16L5 9' stroke='%23667' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg fill='none' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 1rem center;
       background-size: 1.2em;
@@ -58,9 +58,9 @@
       background: #1f2937;
       color: #f3f4f6;
       border-color: #374151;
-      background-image: url("data:image/svg+xml,%3Csvg fill='none' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M19 9L12 16L5 9' stroke='%23ccc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg fill='none' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5' stroke='%23ccc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     }
-    option { color: #111; }
+    option { color: #111; text-align: center; }
     .dark option { color: #fafafa; }
     .week-info {
       margin-top: 1.5rem;
@@ -243,7 +243,7 @@
       };
     }
 
-    // Näytetään kuluva viikko (ei dropdownin mukaan, vaan aina oikeasti meneillään oleva)
+    // Näytetään kuluva viikko (aina oikea, ei dropdownin mukaan)
     function updateCurrentWeekTopInfo() {
       const info = document.getElementById('currentWeekTopInfo');
       const todayWeek = getCurrentIsoWeek();
@@ -252,7 +252,7 @@
       info.textContent = `kuluva viikko: ${todayWeek} ${formatDate(monday)} - ${formatDate(sunday)}`;
     }
 
-    // Näytetään dropdownista valitun viikon tiedot "week-info"-laatikkoon (valinnainen, voit muokata halutessasi)
+    // Näytetään dropdownista valitun viikon tiedot "week-info"-laatikkoon
     function updateCurrentWeekInfo() {
       const info = document.getElementById('currentWeekInfo');
       const [yearStr, weekStr] = currentWeek.split('-V');
