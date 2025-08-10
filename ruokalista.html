@@ -30,31 +30,41 @@
     .loading {
       opacity: 0.6;
     }
-    select {
+    /* Dropdown styles with arrow and centered text */
+    .custom-select {
       border: 1px solid #d1d5db;
       background: #f3f4f6;
       color: #222;
-      padding: 0.5rem 1rem;
+      padding: 0.5rem 2.5rem 0.5rem 1rem;
       font-size: 1.05rem;
       min-width: 200px;
       margin: 0 auto;
       display: block;
       text-align: center;
-      border-radius: 0; /* Ei pyöristyksiä */
+      border-radius: 0;
       appearance: none;
       -webkit-appearance: none;
       -moz-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg fill='none' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M19 9L12 16L5 9' stroke='%23667' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1.2em;
     }
-    .dark select {
+    .custom-select:focus {
+      outline: 2px solid #2563eb;
+      border-color: #2563eb;
+    }
+    .dark .custom-select {
       background: #1f2937;
       color: #f3f4f6;
       border-color: #374151;
+      background-image: url("data:image/svg+xml,%3Csvg fill='none' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M19 9L12 16L5 9' stroke='%23ccc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     }
     option { color: #111; }
     .dark option { color: #fafafa; }
     .week-info {
       margin-top: 1.5rem;
-      color: #2563eb; /* sama kuin bg-blue-600 */
+      color: #2563eb;
       font-weight: 600;
       font-size: 1.08rem;
       text-align: center;
@@ -74,9 +84,7 @@
     <div class="max-w-4xl mx-auto">
       <div class="text-center mb-8">
         <h1 class="text-4xl font-bold mb-2">Viikon Ruokalista</h1>
-        <p class="text-gray-600 dark:text-gray-400">
-          Arkipäivät
-        </p>
+        <p class="text-gray-600 dark:text-gray-400" id="currentWeekTopInfo"></p>
       </div>
 
       <!-- Viikkovalitsin (DROPDOWN) -->
@@ -84,7 +92,7 @@
         <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
           <h3 class="font-semibold mb-3 text-center">Valitse viikko:</h3>
           <div class="flex justify-center">
-            <select id="weekDropdown"></select>
+            <select id="weekDropdown" class="custom-select"></select>
           </div>
           <div class="week-info" id="currentWeekInfo"></div>
         </div>
@@ -104,10 +112,9 @@
       </div>
     </div>
   </div>
-
   <script type="module">
     // ============ MUUTA NÄMÄ OMAAN KÄYTTÖÖSI ============
-    const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit#gid=0';
+    const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/10bBmmXNo8YWJKgak6MT1znba_dE1Ft-eyAfM-qNjqqU/edit?gid=0#gid=0';
     const WEEK_COUNT = 20; // Kuinka monta viikkoa näytetään valitsimessa
     // =====================================================
 
@@ -236,11 +243,21 @@
       };
     }
 
+    // Näytetään kuluva viikko (ei dropdownin mukaan, vaan aina oikeasti meneillään oleva)
+    function updateCurrentWeekTopInfo() {
+      const info = document.getElementById('currentWeekTopInfo');
+      const todayWeek = getCurrentIsoWeek();
+      const [yearStr, weekStr] = todayWeek.split('-V');
+      const {monday, sunday} = getIsoWeekRangeByYearWeek(parseInt(yearStr,10), parseInt(weekStr,10));
+      info.textContent = `kuluva viikko: ${todayWeek} ${formatDate(monday)} - ${formatDate(sunday)}`;
+    }
+
+    // Näytetään dropdownista valitun viikon tiedot "week-info"-laatikkoon (valinnainen, voit muokata halutessasi)
     function updateCurrentWeekInfo() {
       const info = document.getElementById('currentWeekInfo');
       const [yearStr, weekStr] = currentWeek.split('-V');
       const {monday, sunday} = getIsoWeekRangeByYearWeek(parseInt(yearStr,10), parseInt(weekStr,10));
-      info.textContent = `kuluva viikko: ${currentWeek} ${formatDate(monday)} - ${formatDate(sunday)}`;
+      info.textContent = `${currentWeek} ${formatDate(monday)} - ${formatDate(sunday)}`;
     }
 
     function selectWeek(weekName) {
@@ -395,6 +412,7 @@
         currentWeek = availableWeeks[0]?.name || getCurrentIsoWeek();
       }
       renderWeekDropdown();
+      updateCurrentWeekTopInfo();
       updateCurrentWeekInfo();
       loadData();
       setInterval(loadData, 5 * 60 * 1000);
