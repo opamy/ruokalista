@@ -4,17 +4,19 @@
   <meta charset="UTF-8">
   <title>Viikon Ruokalista</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Papa Parse for robust CSV parsing -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
-    * { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif }
+    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif }
     .editable {
       min-height: 40px;
       padding: 8px;
       border-radius: 6px;
       border: 1px solid #e5e7eb;
       background: #f9fafb;
+      white-space: pre-line;
       transition: all 0.2s;
     }
     .dark .editable {
@@ -22,49 +24,22 @@
       background: #1f2937;
       color: #f3f4f6;
     }
-    .editable:focus {
-      outline: none;
-      border-color: #5D5CDE;
-      background: white;
-      box-shadow: 0 0 0 3px rgba(93, 92, 222, 0.1);
-    }
-    .dark .editable:focus {
-      background: #111827;
-    }
-    .editable:empty:before {
-      content: attr(data-placeholder);
-      color: #9ca3af;
-    }
-    .dark .editable:empty:before {
-      color: #6b7280;
-    }
-    .readonly {
-      background: #f3f4f6 !important;
-      cursor: not-allowed;
-    }
-    .dark .readonly {
-      background: #374151 !important;
-    }
-    .loading {
-      opacity: 0.6;
-    }
+    .loading { opacity: 0.6; }
   </style>
 </head>
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
   <div class="min-h-screen p-4">
     <div class="max-w-4xl mx-auto">
       <div class="text-center mb-8">
-        <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-2">Viikon Ruokalista</h1>
+        <h1 class="text-4xl font-bold mb-2">Viikon Ruokalista</h1>
         <p class="text-gray-600 dark:text-gray-400">Arkipäivät • <span id="updateStatus">Ladataan tietoja...</span></p>
       </div>
-
-      <div class="space-y-6" id="ruokaviikko"></div>
-      
+      <div id="ruokaviikko" class="space-y-6"></div>
       <div class="mt-8 text-center space-y-4">
         <div class="flex flex-wrap justify-center gap-3">
-          <button id="paivita" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">🔄 Päivitä tiedot</button>
-          <button id="kopioi" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">📋 Kopioi sisältö</button>
-          <button id="tulosta" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">🖨️ Tulosta</button>
+          <button id="paivita" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">🔄 Päivitä tiedot</button>
+          <button id="kopioi" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg">📋 Kopioi sisältö</button>
+          <button id="tulosta" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg">🖨️ Tulosta</button>
         </div>
         <p class="text-sm text-gray-500 dark:text-gray-400">
           💡 Tiedot päivittyvät automaattisesti Google Sheetsistä. Klikkaa "Päivitä tiedot" saadaksesi uusimmat tiedot.
@@ -72,11 +47,9 @@
       </div>
     </div>
   </div>
-
   <script type="module">
-    // ============ KONFIGURAATIO - VAIHDA TÄMÄ OMAAN SHEETS-LINKKIISI ============
+    // VAIHDA OMAAN SHEETS-URLIISI!
     const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/10bBmmXNo8YWJKgak6MT1znba_dE1Ft-eyAfM-qNjqqU/edit?usp=sharing';
-    // ========================================================================
 
     // Tumma tila automaattisesti
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
@@ -85,132 +58,82 @@
       document.documentElement.classList.toggle('dark', e.matches);
     });
 
-    // Päivien ja kenttien määrittely
-    const days = [
-      { name: "Maanantai" },
-      { name: "Tiistai" },
-      { name: "Keskiviikko" },
-      { name: "Torstai" },
-      { name: "Perjantai" }
-    ];
-    
+    // Päivien nimet
+    const days = ["Maanantai", "Tiistai", "Keskiviikko", "Torstai", "Perjantai"];
+    // Kenttien nimet ja otsikot
     const fields = [
-      { key: "ruoka", label: "Ruoka", placeholder: "Ladataan..." },
-      { key: "kuka", label: "Kuka tekee", placeholder: "Ladataan..." },
-      { key: "tarvikkeet", label: "Tarvikkeet", placeholder: "Ladataan..." },
-      { key: "ohjeet", label: "Ohjeet", placeholder: "Ladataan..." }
+      { key: "ruoka", label: "Ruoka" },
+      { key: "kuka", label: "Kuka tekee" },
+      { key: "tarvikkeet", label: "Tarvikkeet" },
+      { key: "ohjeet", label: "Ohjeet" }
     ];
 
-    // Renderöi kentät
-    function renderDays() {
+    // Renderöi tyhjät kentät
+    function renderDays(rows=[]) {
       let html = "";
-      days.forEach((day, dayIndex) => {
+      for(let i=0; i<days.length; i++) {
         html += `<div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-          <h2 class="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">${day.name}</h2>
+          <h2 class="text-2xl font-semibold mb-4">${days[i]}</h2>
           <div class="grid md:grid-cols-2 gap-6">`;
-        
-        fields.slice(0,2).forEach((field) => {
+        fields.slice(0,2).forEach((field, j) => {
           html += `<div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">${field.label}</label>
-            <div class="editable readonly text-base" 
-                 data-day="${dayIndex}" 
-                 data-field="${field.key}"
-                 data-placeholder="${field.placeholder}"></div>
+            <label class="block text-sm font-medium mb-2">${field.label}</label>
+            <div class="editable readonly text-base" id="d${i}-${field.key}"></div>
           </div>`;
         });
-        
         html += `</div>
           <div class="mt-4">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">${fields[2].label}</label>
-            <div class="editable readonly text-base" 
-                 data-day="${dayIndex}" 
-                 data-field="${fields[2].key}"
-                 data-placeholder="${fields[2].placeholder}"></div>
+            <label class="block text-sm font-medium mb-2">${fields[2].label}</label>
+            <div class="editable readonly text-base" id="d${i}-${fields[2].key}"></div>
           </div>
           <div class="mt-4">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">${fields[3].label}</label>
-            <div class="editable readonly text-base min-h-20" 
-                 data-day="${dayIndex}" 
-                 data-field="${fields[3].key}"
-                 data-placeholder="${fields[3].placeholder}"></div>
+            <label class="block text-sm font-medium mb-2">${fields[3].label}</label>
+            <div class="editable readonly text-base min-h-20" id="d${i}-${fields[3].key}"></div>
           </div>
         </div>`;
-      });
+      }
       document.getElementById('ruokaviikko').innerHTML = html;
     }
 
-    // Poimi Spreadsheet ID URL:sta
-    function extractSpreadsheetId(url) {
-      const match = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-      return match ? match[1] : null;
-    }
-
-    // Päivitä yksittäinen kenttä
+    // Päivitä kenttä (HTML: rivinvaihdot näkyviin)
     function updateField(dayIndex, fieldKey, value) {
-      const element = document.querySelector(`[data-day="${dayIndex}"][data-field="${fieldKey}"]`);
-      if (element) {
-        element.textContent = value || '';
+      const el = document.getElementById(`d${dayIndex}-${fieldKey}`);
+      if (el) {
+        el.innerHTML = (value || '').replace(/\n/g, "<br>");
       }
     }
 
-    // Täytä kentät Sheets-datalla
+    // Täytä tiedot taulukosta
     function populateFields(sheetData) {
-      // Tyhjennä ensin kaikki kentät
-      document.querySelectorAll('.editable').forEach(el => {
-        el.textContent = '';
-      });
-
-      // Oletetaan että data on muodossa:
-      // Rivi 0: [Päivä, Ruoka, Kuka, Tarvikkeet, Ohjeet] (otsikot - ohitetaan)
-      // Rivi 1: [Maanantai, Spagetti, Äiti, Pasta;Jauheliha, Keitä pasta...]
-      // jne.
-      
-      sheetData.forEach((row, rowIndex) => {
-        if (rowIndex === 0) return; // Ohita otsikkorivi
-        
-        const dayIndex = rowIndex - 1;
-        if (dayIndex >= 5) return; // Vain 5 päivää
-        
-        const [dayName, ruoka, kuka, tarvikkeet, ohjeet] = row;
-        
-        // Päivitä kentät
-        updateField(dayIndex, 'ruoka', ruoka);
-        updateField(dayIndex, 'kuka', kuka);
-        updateField(dayIndex, 'tarvikkeet', tarvikkeet);
-        updateField(dayIndex, 'ohjeet', ohjeet);
-      });
+      for(let i=0; i<days.length; i++) {
+        const row = sheetData[i+1]; // rivi 0 = otsikot
+        if (!row) continue;
+        updateField(i, "ruoka", row[1]);
+        updateField(i, "kuka", row[2]);
+        updateField(i, "tarvikkeet", row[3]);
+        updateField(i, "ohjeet", row[4]);
+      }
     }
 
     // Lataa tiedot Google Sheetsistä
     async function loadData() {
       const statusEl = document.getElementById('updateStatus');
       const container = document.getElementById('ruokaviikko');
-      
       statusEl.textContent = 'Ladataan tietoja...';
       statusEl.className = 'text-blue-500';
       container.classList.add('loading');
-
       try {
-        const spreadsheetId = extractSpreadsheetId(GOOGLE_SHEETS_URL);
-        if (!spreadsheetId) {
+        const spreadsheetId = (GOOGLE_SHEETS_URL.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/) || [])[1];
+        if (!spreadsheetId)
           throw new Error('Virheellinen Google Sheets URL');
-        }
-
-        // Käytä CSV-exporttia
         const csvUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=csv&gid=0`;
-        
         const response = await fetch(csvUrl);
-        
-        if (!response.ok) {
+        if (!response.ok)
           throw new Error(`Dokumentti ei ole julkinen tai sitä ei löydy (${response.status})`);
-        }
-        
         const csvData = await response.text();
-
-        // Käytä Papa Parsea rivinvaihtojen ja lainausmerkkien käsittelyyn
         const rows = Papa.parse(csvData, { skipEmptyLines: true }).data;
-        
-        if (rows.length > 0) {
+        if (rows.length > 1) {
+          renderDays(rows);
           populateFields(rows);
           const now = new Date().toLocaleTimeString('fi-FI');
           statusEl.textContent = `Päivitetty ${now}`;
@@ -220,7 +143,6 @@
           statusEl.className = 'text-orange-500';
         }
       } catch (error) {
-        console.error('Virhe ladattaessa dataa:', error);
         statusEl.textContent = `Virhe: ${error.message}`;
         statusEl.className = 'text-red-500';
       } finally {
@@ -228,18 +150,18 @@
       }
     }
 
-    // Event listeners
-    document.getElementById('paivita').addEventListener('click', loadData);
-
     // Kopioi
     document.getElementById('kopioi').onclick = function() {
       let output = 'VIIKON RUOKALISTA\n\n';
-      const dayBlocks = document.querySelectorAll('.bg-gray-50, .dark\\:bg-gray-800');
-      Array.from(dayBlocks).forEach((block) => {
-        const day = block.querySelector('h2').textContent;
-        const [ruoka, kuka, tarvikkeet, ohjeet] = block.querySelectorAll('.editable');
-        output += `${day.toUpperCase()}\nRuoka: ${ruoka.textContent.trim()}\nKuka tekee: ${kuka.textContent.trim()}\nTarvikkeet: ${tarvikkeet.textContent.trim()}\nOhjeet: ${ohjeet.textContent.trim()}\n\n`;
-      });
+      for(let i=0; i<days.length; i++) {
+        output += `${days[i].toUpperCase()}\n`;
+        fields.forEach(f => {
+          const el = document.getElementById(`d${i}-${f.key}`);
+          let txt = el ? el.innerText : '';
+          output += `${f.label}: ${txt}\n`;
+        });
+        output += `\n`;
+      }
       navigator.clipboard.writeText(output).then(() => {
         showToast('Ruokalista kopioitu leikepöydälle!');
       });
@@ -250,7 +172,10 @@
       window.print();
     };
 
-    // Toast
+    // Päivitä napista
+    document.getElementById('paivita').onclick = loadData;
+
+    // Toast info
     function showToast(message) {
       const toast = document.createElement('div');
       toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300';
@@ -262,14 +187,11 @@
       }, 2000);
     }
 
-    // Alusta sivu
+    // Alusta ja lataa heti
     renderDays();
-    
-    // Lataa tiedot heti sivun latautuessa
     loadData();
+    setInterval(loadData, 5 * 60 * 1000); // 5min
 
-    // Päivitä tiedot automaattisesti 5 minuutin välein (valinnainen)
-    setInterval(loadData, 5 * 60 * 1000); // 5 minuuttia
   </script>
 </body>
 </html>
