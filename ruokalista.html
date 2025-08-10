@@ -14,6 +14,7 @@
       border: 1px solid #e5e7eb;
       background: #f9fafb;
       transition: all 0.2s;
+      white-space: pre-line;
     }
     .dark .editable {
       border-color: #374151;
@@ -30,10 +31,21 @@
     .loading {
       opacity: 0.6;
     }
-    .week-tab { transition: all 0.2s; }
-    .week-tab.active { background: #3b82f6; color: white; }
-    .week-tab:not(.active):hover { background: #e5e7eb; }
-    .dark .week-tab:not(.active):hover { background: #374151; }
+    select {
+      background: inherit;
+      color: inherit;
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: 1px solid #d1d5db;
+    }
+    .dark select {
+      background: #1f2937;
+      color: #f3f4f6;
+      border-color: #374151;
+    }
+    option { color: #111; }
+    .dark option { color: #fafafa; }
   </style>
 </head>
 <body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -46,11 +58,13 @@
         </p>
       </div>
 
-      <!-- Viikkovalitsin -->
+      <!-- Viikkovalitsin (DROPDOWN) -->
       <div class="mb-6">
         <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
           <h3 class="font-semibold mb-3 text-center">Valitse viikko:</h3>
-          <div id="weekTabs" class="flex flex-wrap justify-center gap-2"></div>
+          <div class="flex justify-center">
+            <select id="weekDropdown"></select>
+          </div>
           <div class="mt-3 text-center">
             <span class="text-sm text-gray-500 dark:text-gray-400">
               Luo uusi välilehti Sheetsiin muodossa 2025-V32 jne.
@@ -76,7 +90,7 @@
 
   <script type="module">
     // ============ MUUTA NÄMÄ OMAAN KÄYTTÖÖSI ============
-    const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/10bBmmXNo8YWJKgak6MT1znba_dE1Ft-eyAfM-qNjqqU/edit?gid=0#gid=0';
+    const GOOGLE_SHEETS_URL = 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit#gid=0';
     const START_WEEK = '2025-V32'; // Aloitusviikko
     const WEEK_COUNT = 20; // Kuinka monta viikkoa näytetään valitsimessa
     // =====================================================
@@ -162,39 +176,25 @@
       document.getElementById('ruokaviikko').innerHTML = html;
     }
 
-    // Renderöi viikkovalitsin
-    function renderWeekTabs() {
-      const tabsContainer = document.getElementById('weekTabs');
-      let tabsHtml = '';
+    // Renderöi viikkovalitsin DROPDOWN
+    function renderWeekDropdown() {
+      const dropdown = document.getElementById('weekDropdown');
+      dropdown.innerHTML = '';
       availableWeeks.forEach(week => {
-        const isActive = week.name === currentWeek;
-        const activeClass = isActive ? 'active' : '';
-        tabsHtml += `
-          <button class="week-tab ${activeClass} px-4 py-2 rounded-lg text-sm font-medium transition-colors" 
-                  data-week="${week.name}" 
-                  data-sheet="${week.sheetName}">
-            ${week.name}
-          </button>
-        `;
+        const opt = document.createElement('option');
+        opt.value = week.name;
+        opt.textContent = week.name;
+        if (week.name === currentWeek) opt.selected = true;
+        dropdown.appendChild(opt);
       });
-      tabsContainer.innerHTML = tabsHtml;
-      document.querySelectorAll('.week-tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-          const weekName = this.getAttribute('data-week');
-          selectWeek(weekName);
-        });
-      });
+      dropdown.onchange = function() {
+        selectWeek(this.value);
+      };
     }
 
     // Valitse viikko
     function selectWeek(weekName) {
       currentWeek = weekName;
-      document.querySelectorAll('.week-tab').forEach(tab => {
-        tab.classList.remove('active');
-        if (tab.getAttribute('data-week') === weekName) {
-          tab.classList.add('active');
-        }
-      });
       loadData();
       localStorage.setItem('selectedWeek', weekName);
     }
@@ -209,7 +209,12 @@
         for (let i = 0; i < line.length; i++) {
           const char = line[i];
           if (char === '"') {
-            inQuotes = !inQuotes;
+            if (i + 1 < line.length && line[i + 1] === '"') {
+              current += '"';
+              i++; // skip next quote
+            } else {
+              inQuotes = !inQuotes;
+            }
           } else if (char === ',' && !inQuotes) {
             result.push(current.trim().replace(/^"|"$/g, ''));
             current = '';
@@ -222,17 +227,28 @@
       });
     }
 
+    // Muuta rivinvaihdot HTML-muotoon
+    function formatLinebreaks(text) {
+      if (!text) return '';
+      // Muuta \r\n ja \r -> \n
+      return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').map(line => {
+        // Jos tyhjä rivi, säilytä
+        if(line === '') return '<br>';
+        return line.replace(/</g, "&lt;").replace(/>/g, "&gt;"); // XSS-suojaus
+      }).join('<br>');
+    }
+
     // Päivitä yksittäinen kenttä
     function updateField(dayIndex, fieldKey, value) {
       const element = document.querySelector(`[data-day="${dayIndex}"][data-field="${fieldKey}"]`);
       if (element) {
-        element.textContent = value || '';
+        element.innerHTML = formatLinebreaks(value || '');
       }
     }
 
     // Täytä kentät Sheets-datalla
     function populateFields(sheetData) {
-      document.querySelectorAll('.editable').forEach(el => { el.textContent = ''; });
+      document.querySelectorAll('.editable').forEach(el => { el.innerHTML = ''; });
       sheetData.forEach((row, rowIndex) => {
         if (rowIndex === 0) return; // Ohita otsikkorivi
         const dayIndex = rowIndex - 1;
@@ -263,14 +279,19 @@
         const rows = parseCSV(csvData);
         if (rows.length > 0) {
           populateFields(rows);
-          const now = new Date().toLocaleTimeString('fi-FI');
-          statusEl.textContent = `${currentWeek} - Päivitetty ${now}`;
+          const now = new Date();
+          const formatted = ('0'+now.getDate()).slice(-2) + '.' +
+                            ('0'+(now.getMonth()+1)).slice(-2) + '.' +
+                            now.getFullYear() + ' ' +
+                            ('0'+now.getHours()).slice(-2) + '.' +
+                            ('0'+now.getMinutes()).slice(-2);
+          statusEl.textContent = `${currentWeek} – Päivitetty ${formatted}`;
         } else {
-          statusEl.textContent = `${currentWeek} - Ei dataa`;
+          statusEl.textContent = `${currentWeek} – Ei dataa`;
         }
       } catch (error) {
         statusEl.textContent = `Virhe (${currentWeek}): ${error.message}`;
-        document.querySelectorAll('.editable').forEach(el => { el.textContent = ''; });
+        document.querySelectorAll('.editable').forEach(el => { el.innerHTML = ''; });
       } finally {
         container.classList.remove('loading');
       }
@@ -283,7 +304,8 @@
       Array.from(dayBlocks).forEach((block) => {
         const day = block.querySelector('h2').textContent;
         const [ruoka, kuka, tarvikkeet, ohjeet] = block.querySelectorAll('.editable');
-        output += `${day.toUpperCase()}\nRuoka: ${ruoka.textContent.trim()}\nKuka tekee: ${kuka.textContent.trim()}\nTarvikkeet: ${tarvikkeet.textContent.trim()}\nOhjeet: ${ohjeet.textContent.trim()}\n\n`;
+        // Poistetaan <br> kopioitaessa
+        output += `${day.toUpperCase()}\nRuoka: ${ruoka.innerText.trim()}\nKuka tekee: ${kuka.innerText.trim()}\nTarvikkeet: ${tarvikkeet.innerText.trim()}\nOhjeet: ${ohjeet.innerText.trim()}\n\n`;
       });
       navigator.clipboard.writeText(output).then(() => {
         showToast('Ruokalista kopioitu leikepöydälle!');
@@ -324,7 +346,7 @@
       } else {
         currentWeek = availableWeeks[0]?.name || START_WEEK;
       }
-      renderWeekTabs();
+      renderWeekDropdown();
       loadData();
       setInterval(loadData, 5 * 60 * 1000);
     }
