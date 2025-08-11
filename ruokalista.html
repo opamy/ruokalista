@@ -207,11 +207,17 @@
       return match ? match[1] : null;
     }
 
-    function renderDays() {
+    // Päivitetty renderDays niin että tulee päivämäärä viikonpäivän perään
+    function renderDays(weekMonday) {
       let html = "";
       days.forEach((day, dayIndex) => {
+        // Laske päivän päivämäärä (maanantai + dayIndex päivää)
+        const dayDate = new Date(weekMonday);
+        dayDate.setDate(dayDate.getDate() + dayIndex);
+        const dateStr = formatDate(dayDate);
+
         html += `<div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-          <h2 class="text-2xl font-semibold mb-4">${day.name}</h2>
+          <h2 class="text-2xl font-semibold mb-4">${day.name} ${dateStr}</h2>
           <div class="grid md:grid-cols-2 gap-6">`;
         fields.slice(0,2).forEach((field) => {
           html += `<div>
@@ -268,6 +274,10 @@
     function selectWeek(weekName) {
       currentWeek = weekName;
       updateCurrentWeekInfo();
+      // Laske viikon maanantai
+      const [yearStr, weekStr] = currentWeek.split('-V');
+      const { monday } = getIsoWeekRangeByYearWeek(parseInt(yearStr,10), parseInt(weekStr,10));
+      renderDays(monday);
       loadData();
       localStorage.setItem('selectedWeek', weekName);
     }
@@ -408,7 +418,6 @@
         alert('Virheellinen Google Sheets URL');
         return;
       }
-      renderDays();
       availableWeeks = generateWeekList(getCurrentIsoWeek(), WEEK_COUNT);
       const savedWeek = localStorage.getItem('selectedWeek');
       if (savedWeek && availableWeeks.some(w => w.name === savedWeek)) {
@@ -419,6 +428,10 @@
       renderWeekDropdown();
       updateCurrentWeekTopInfo();
       updateCurrentWeekInfo();
+      // Laske viikon maanantai
+      const [yearStr, weekStr] = currentWeek.split('-V');
+      const { monday } = getIsoWeekRangeByYearWeek(parseInt(yearStr,10), parseInt(weekStr,10));
+      renderDays(monday);
       loadData();
       setInterval(loadData, 5 * 60 * 1000);
     }
