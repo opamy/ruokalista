@@ -15,23 +15,13 @@
       transition: all 0.2s;
       white-space: pre-line;
     }
-    .dark .editable {
-      border-color: #374151;
-      background: #1f2937;
-      color: #f3f4f6;
-    }
     .readonly {
       background: #f3f4f6 !important;
       cursor: not-allowed;
     }
-    .dark .readonly {
-      background: #374151 !important;
-    }
     .loading {
       opacity: 0.6;
     }
-
-    /* Perus pyöristetty dropdown sivun väreillä */
     .dropdown-a {
       border-radius: 0.75rem;
       border: 1px solid #d1d5db;
@@ -58,15 +48,7 @@
       outline: 2px solid #2563eb;
       border-color: #2563eb;
     }
-    .dark .dropdown-a {
-      background: #1f2937;
-      color: #f3f4f6;
-      border-color: #374151;
-      background-image: none;
-      box-shadow: 0 1px 2px 0 #0003;
-    }
     option { color: #111; text-align: center; }
-    .dark option { color: #fafafa; }
     .week-info {
       margin-top: 1.5rem;
       color: #2563eb;
@@ -78,23 +60,19 @@
       padding: 0.7em 0.3em;
       letter-spacing: 0.01em;
     }
-    .dark .week-info {
-      background: #1f2937;
-      color: #f3f4f6;
-    }
   </style>
 </head>
-<body class="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+<body class="bg-white text-gray-900">
   <div class="min-h-screen p-4">
     <div class="max-w-4xl mx-auto">
       <div class="text-center mb-8">
         <h1 class="text-4xl font-bold mb-2">Viikon Ruokalista</h1>
-        <p class="text-gray-600 dark:text-gray-400" id="currentWeekTopInfo"></p>
+        <p class="text-gray-600" id="currentWeekTopInfo"></p>
       </div>
 
       <!-- Viikkovalitsin (DROPDOWN) -->
       <div class="mb-6">
-        <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+        <div class="bg-gray-100 rounded-lg p-4">
           <h3 class="font-semibold mb-3 text-center">Valitse viikko:</h3>
           <div class="flex justify-center">
             <select id="weekDropdown" class="dropdown-a"></select>
@@ -111,7 +89,7 @@
           <button id="kopioi" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">📋 Kopioi sisältö</button>
           <button id="tulosta" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition-colors">🖨️ Tulosta</button>
         </div>
-        <p class="text-sm text-gray-500 dark:text-gray-400">
+        <p class="text-sm text-gray-500">
           💡 Tiedot päivittyvät automaattisesti Google Sheetsistä.
         </p>
       </div>
@@ -123,12 +101,8 @@
     const WEEK_COUNT = 20; // Kuinka monta viikkoa näytetään valitsimessa
     // =====================================================
 
-    // Tumma tila automaattisesti
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
-      document.documentElement.classList.add('dark');
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-      document.documentElement.classList.toggle('dark', e.matches);
-    });
+    // EI tummaa tilaa
+    // document.documentElement.classList.remove('dark');
 
     const days = [
       { name: "Maanantai" },
@@ -216,7 +190,7 @@
         dayDate.setDate(dayDate.getDate() + dayIndex);
         const dateStr = formatDate(dayDate);
 
-        html += `<div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+        html += `<div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
           <h2 class="text-2xl font-semibold mb-4">${day.name} ${dateStr}</h2>
           <div class="grid md:grid-cols-2 gap-6">`;
         fields.slice(0,2).forEach((field) => {
@@ -386,7 +360,7 @@
 
     document.getElementById('kopioi').onclick = function() {
       let output = `VIIKON RUOKALISTA - ${currentWeek}\n\n`;
-      const dayBlocks = document.querySelectorAll('.bg-gray-50, .dark\\:bg-gray-800');
+      const dayBlocks = document.querySelectorAll('.bg-gray-50');
       Array.from(dayBlocks).forEach((block) => {
         const day = block.querySelector('h2').textContent;
         const [ruoka, kuka, tarvikkeet, ohjeet] = block.querySelectorAll('.editable');
